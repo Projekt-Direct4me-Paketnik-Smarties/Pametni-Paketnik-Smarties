@@ -1,0 +1,4 @@
+Grob načrt podatkov
+Kje bomo paketnik uporabljali
+Dodatne funkcionalnosti
+Osnova: Moznost odklepanja, logs, da lahko ima vec oseb dostop do paketnika
