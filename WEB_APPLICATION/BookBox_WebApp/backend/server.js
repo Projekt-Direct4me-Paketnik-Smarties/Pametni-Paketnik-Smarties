@@ -3,19 +3,6 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("Backend dela!");
-});
-
-app.get("/api/test", (req, res) => {
-  res.json({ message: "API dela!" });
-});
-
 const PORT = process.env.PORT || 5000;
 console.log(process.env.MONGO_URI)
 mongoose
@@ -29,3 +16,35 @@ mongoose
   .catch((error) => {
     console.error("Napaka pri povezavi z MongoDB:", error);
   });
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+// Routers
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/userRoutes');
+
+var app = express();
+
+app.use(cors({
+  credentials: true,
+  origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000'
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Routes
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
+// 404
+app.use(function(req, res, next) {
+  res.status(404).json({ message: "Not found" });
+});
+
+// Error handler
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500).json(err);
+});
+
+module.exports = app;
