@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Book Box</string>
+    <string name="navMap">Map</string>
+    <string name="navList">List</string>
+    <string name="navMyBooks">My books</string>
+    <string name="navProfile">Profile</string>
 </resources>
