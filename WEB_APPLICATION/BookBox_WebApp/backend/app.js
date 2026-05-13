@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+var logger = require('morgan');
 require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
@@ -19,17 +20,30 @@ mongoose
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+
 // Routers
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/userRoutes');
 
 var app = express();
 
+
+var session = require('express-session');
+var MongoStore = require('connect-mongo');
+app.use(session({
+  secret: 'Our little secret',
+  resave: true,
+  saveUninitialized: false,
+  store: MongoStore.create({mongoUrl: process.env.MONGO_URI})
+}));
+
+
 app.use(cors({
   credentials: true,
   origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000'
 }));
 
+app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
