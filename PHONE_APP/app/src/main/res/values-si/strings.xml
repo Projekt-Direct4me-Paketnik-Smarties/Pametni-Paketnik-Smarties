@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Book Box</string>
+    <string name="navMap">Zemljevid</string>
+    <string name="navList">Seznam</string>
+    <string name="navMyBooks">Moje knjige</string>
+    <string name="navProfile">Profil</string>
+</resources>
