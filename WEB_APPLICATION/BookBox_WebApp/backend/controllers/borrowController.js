@@ -2,7 +2,7 @@ var BorrowModel = require('../models/borrowModel.js');
 
 module.exports = {
 
-    listAll: async function(req, res) {
+    listPerUser: async function(req, res) {
         try {
             const borrows = await BorrowModel.find()
                 .populate('user')

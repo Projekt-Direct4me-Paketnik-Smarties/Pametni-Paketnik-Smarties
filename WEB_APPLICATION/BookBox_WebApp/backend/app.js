@@ -26,7 +26,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/userRoutes');
 var bookRouter = require('./routes/bookRoutes');
 var packetBoxRouter = require('./routes/packetBoxRoutes');
-var reservationRouter = require('./routes/reservationRoutes');
+var borrowRouter = require('./routes/borrowRoutes');
 
 var app = express();
 
