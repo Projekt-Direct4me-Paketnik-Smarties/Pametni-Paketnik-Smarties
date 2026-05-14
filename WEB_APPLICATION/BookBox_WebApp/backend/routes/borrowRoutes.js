@@ -29,8 +29,8 @@ router.get('/all',requiresAuth, borrowController.list); //to get all
 router.get('/:id',requiresLogin, borrowController.show);
 
 router.post('/',requiresLogin, borrowController.create);
+router.post('/return', requiresLogin, borrowController.returnBooks)
 
-router.put('/return', requiresLogin, borrowController.returnBooks)
 router.put('/:id',requiresAuth, borrowController.update);
 
 router.delete('/:id',requiresAuth, borrowController.remove);

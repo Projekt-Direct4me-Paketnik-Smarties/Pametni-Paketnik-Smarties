@@ -337,6 +337,7 @@ function Books() {
                                 <p style={styles.bookGenre}>{book.genre || 'Unknown genre'}</p>
                                 <h3 style={styles.bookTitle}>{book.title}</h3>
                                 <p style={styles.bookAuthor}>{book.author || 'Unknown author'}</p>
+                                <p style={styles.bookAuthor}>{book._id || 'Unknown id'}</p>
 
                                 {book.glossary && (
                                     <p style={styles.bookGlossary}>{book.glossary}</p>

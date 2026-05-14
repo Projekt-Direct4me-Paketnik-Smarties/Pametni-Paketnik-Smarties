@@ -8,7 +8,7 @@ module.exports = {
         try {
             const borrows = await BorrowModel.find()
                 .populate('user')
-                .populate('borowedBooks');
+                .populate('books');
             return res.json(borrows);
         } catch (err) {
             console.error(err);
@@ -18,7 +18,7 @@ module.exports = {
     list: async function(req, res) {
         try {
             const borrows = await BorrowModel.find({ user: req.session.userId })
-                .populate('borowedBooks');
+                .populate('books');
             return res.json(borrows);
         } catch (err) {
             console.error(err);
@@ -72,7 +72,7 @@ module.exports = {
             );
 
             // remove books from box
-            await PacketBoxModel.updateOne(
+            await PacketboxModel.updateOne(
                 { _id: boxId },
                 { $pull: { books: { $in: bookIds } } }
             );
@@ -159,10 +159,10 @@ module.exports = {
 
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
             const books = await BookModel.find({ _id: { $in: bookIds } });
-            const available = books.filter(b => b.status !== 'available');
+            const available = books.filter(b => b.status !== 'borrowed');
             if (available.length > 0) {
                 return res.status(400).json({
-                    message: 'Some books are some of the box are not borrowed',
+                    message: 'Some books are not borrowed',
                     books: available.map(b => b.title)
                 });
             }
@@ -175,7 +175,7 @@ module.exports = {
             );
 
             // remove books from box
-            await PacketBoxModel.updateOne(
+            await PacketboxModel.updateOne(
                 { _id: boxId },
                 { $addToSet: { books: { $each: bookIds } } }
             );
