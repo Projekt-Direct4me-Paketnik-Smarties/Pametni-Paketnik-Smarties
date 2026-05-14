@@ -23,10 +23,10 @@ function Register() {
 
     return (
         <div style={styles.card}>
-            <h2 style={styles.title}>register</h2>
+            <h2 style={styles.title}>Register</h2>
             <form onSubmit={handleRegister}>
                 <div style={styles.field}>
-                    <label style={styles.label}>email</label>
+                    <label style={styles.label}>Enter email</label>
                     <input
                         type="text"
                         value={email}
@@ -36,7 +36,7 @@ function Register() {
                     />
                 </div>
                 <div style={styles.field}>
-                    <label style={styles.label}>username</label>
+                    <label style={styles.label}>Enter username</label>
                     <input
                         type="text"
                         value={username}
@@ -46,7 +46,7 @@ function Register() {
                     />
                 </div>
                 <div style={styles.field}>
-                    <label style={styles.label}>password</label>
+                    <label style={styles.label}>Enter password</label>
                     <input
                         type="password"
                         value={password}
@@ -55,7 +55,7 @@ function Register() {
                         style={styles.input}
                     />
                 </div>
-                <button type="submit" style={styles.button}>register</button>
+                <button type="submit" style={styles.button}>REGISTER</button>
             </form>
             {status && <p style={styles.status}>{status}</p>}
         </div>

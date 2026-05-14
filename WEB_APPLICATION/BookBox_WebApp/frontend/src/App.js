@@ -7,6 +7,7 @@ import Register from './components/Register.js';
 import UserPanel from './components/UserPanel.js';
 import Book from './components/Book.js';
 import Box from './components/Box.js';
+import Welcome from './components/Welcome.js';
 import './App.css';
 
 function App() {
@@ -20,17 +21,20 @@ function App() {
     return (
         <BrowserRouter>
             <UserContext.Provider value={{ user, setUserContext: updateUserData }}>
+                <div className="page-shell">
+                    <Navbar />
 
-                <Navbar />
-                <div style={styles.main}>
-                    <Routes>
-                        <Route path="/" element={<Book />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/user-panel" element={<UserPanel />} />
-                    </Routes>
+                    <main style={styles.main}>
+                        <Routes>
+                            <Route path="/" element={<Welcome />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/profile" element={<UserPanel />} />
+                            <Route path="/box" element={<Box />} />
+                            <Route path="/books" element={<Book />} />
+                        </Routes>
+                    </main>
                 </div>
-
             </UserContext.Provider>
         </BrowserRouter>
     );
@@ -38,18 +42,12 @@ function App() {
 
 const styles = {
     main: {
-        maxWidth: '860px',
+        width: '100%',
+        maxWidth: '1060px',
         margin: '0 auto',
-        padding: '2rem 24px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        backgroundColor: "#fdfdfd"
-    },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '16px',
+        padding: '56px',
+        minHeight: 'calc(100vh - 96px)',
+        boxSizing: 'border-box',
     },
 };
 

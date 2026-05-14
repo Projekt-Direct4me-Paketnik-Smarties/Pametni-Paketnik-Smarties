@@ -7,20 +7,23 @@ function Navbar() {
 
     return (
         <nav style={styles.nav}>
-            <Link to="/" style={styles.logo}>myapp</Link>
+            <Link to="/" style={styles.logo}>BookBox</Link>
+
 
             <div style={styles.links}>
-                <Link to="/" style={styles.link}>Books</Link>
+                <Link to="/" style={styles.link} className="nav-link">Home</Link>
+                <Link to="/books" style={styles.link} className="nav-link">Books</Link>
+                <Link to="/box" style={styles.link} className="nav-link">Box</Link>
 
                 {user ? (
                     <>
-                        <Link to="/profile" style={styles.link}>Profile</Link>
-                        <span style={styles.userInfo}>logged in as {user.username}</span>
+                        <Link to="/profile" style={styles.link} className="nav-link">Profile</Link>
+                        <span style={styles.userInfo}>Hello {user.username}!</span>
                     </>
                 ) : (
                     <>
-                        <Link to="/login" style={styles.link}>Login</Link>
-                        <Link to="/register" style={styles.link}>Register</Link>
+                        <Link to="/login" style={styles.link} className="nav-link">Login</Link>
+                        <Link to="/register" style={styles.link} className="nav-link">Register</Link>
                     </>
                 )}
             </div>
@@ -30,33 +33,43 @@ function Navbar() {
 
 const styles = {
     nav: {
+        height: '74px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '12px 24px',
-        borderBottom: '1px solid #eee',
-        backgroundColor: '#fff',
-    },
-    userInfo: {
-        fontSize: '14px',
-        color: '#666',
+        padding: '0 56px',
+        borderBottom: '1px solid #e6e1d8',
+        backgroundColor: '#ffffff',
     },
     logo: {
-    fontWeight: 600,
-    fontSize: '18px',
-    color: '#222',
-    textDecoration: 'none',
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontWeight: 700,
+        fontSize: '22px',
+        color: '#171717',
+        textDecoration: 'none',
+        letterSpacing: '-0.04em',
     },
     links: {
         display: 'flex',
         alignItems: 'center',
-        gap: '16px',
+        gap: '24px',
     },
     link: {
-        fontSize: '14px',
-        color: '#333',
+        fontSize: '11px',
+        color: '#3b3b3b',
         textDecoration: 'none',
-        fontWeight: 500,
+        fontWeight: 800,
+        letterSpacing: '0.18em',
+        textTransform: 'uppercase',
+        padding: '8px 0',
+        borderBottom: '1px solid transparent',
+    },
+    userInfo: {
+        fontSize: '17px',
+        color: '#f7f7f7',
+        padding: '4px 8px',
+        backgroundColor: '#ffa811',
+        borderRadius: '6px',
     },
 };
 
