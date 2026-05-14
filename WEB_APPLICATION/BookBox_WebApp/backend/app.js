@@ -24,6 +24,9 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 // Routers
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/userRoutes');
+var bookRouter = require('./routes/bookRoutes');
+var packetBoxRouter = require('./routes/packetBoxRoutes');
+var reservationRouter = require('./routes/reservationRoutes');
 
 var app = express();
 
@@ -47,9 +50,14 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use('/images', express.static('public/images'));
+
 // Routes
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/books', bookRouter);
+app.use('/box', packetBoxRouter);
+app.use('/reservations', reservationRouter);
 
 // 404
 app.use(function(req, res, next) {
