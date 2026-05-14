@@ -26,13 +26,12 @@ function requiresAuth(req, res, next){
 
 router.get('/',requiresLogin, borrowController.listPerUser); //to get your own
 router.get('/all',requiresAuth, borrowController.list); //to get all
-
 router.get('/:id',requiresLogin, borrowController.show);
 
 router.post('/',requiresLogin, borrowController.create);
 
-router.put('/:id',requiresAuth, borrowController.update);
 router.put('/return', requiresLogin, borrowController.returnBooks)
+router.put('/:id',requiresAuth, borrowController.update);
 
 router.delete('/:id',requiresAuth, borrowController.remove);
 

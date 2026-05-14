@@ -8,6 +8,7 @@ import UserPanel from './components/UserPanel.js';
 import Book from './components/Book.js';
 import Box from './components/Box.js';
 import Welcome from './components/Welcome.js';
+import Borrow from './components/Borrow.js';
 import './App.css';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
                             <Route path="/profile" element={<UserPanel />} />
                             <Route path="/box" element={<Box />} />
                             <Route path="/books" element={<Book />} />
+                            <Route path="borrow" element={<Borrow />}/>
                         </Routes>
                     </main>
                 </div>
