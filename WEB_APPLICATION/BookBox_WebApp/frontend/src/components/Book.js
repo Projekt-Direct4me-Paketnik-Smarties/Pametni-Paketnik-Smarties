@@ -10,7 +10,9 @@ function Books() {
     const [image, setImage] = useState(null);
     const [bookId, setBookId] = useState('');
     const [status, setStatus] = useState('');
-    const [photo, setPhoto] = useState([]);
+    //const [photo, setPhoto] = useState([]);
+    const [books, setBooks] = useState([]);
+    const [selectedBook, setSelectedBook] = useState(null);
 
     function buildFormData() {
         const fd = new FormData();
@@ -73,22 +75,39 @@ function Books() {
     async function handleList() {
         const res = await fetch(`${BASE}/`, { credentials: 'include' });
         const data = await res.json();
+
         console.log('list:', data);
+
+        if(res.ok) {
+            setBooks(data);
+            setStatus('books loaded');
+        } else {
+            setStatus(data.message || 'list failed');
+        }
+
+        /*
         setPhoto(data[0]);
         setBookId(data[0]._id)
         setStatus('list logged to console');
+        */
     }
 
     async function handleShow() {
         if (!bookId) return setStatus('book id required for show');
+
         const res = await fetch(`${BASE}/${bookId}`, { credentials: 'include' });
         const data = await res.json();
-        console.log('show:', data);
-        setPhoto(data)
-        setBookId(data._id)
-        console.log(photo.path)
-        console.log(photo)
-        setStatus('show logged to console');
+
+        if(res.ok) {
+            cconsole.log('show:', data);
+            setTitle(data.title || '');
+            setAuthor(data.author || '');
+            setGenre(data.genre || '');
+            setGlossary(data.glossary || '');
+            setStatus('book loaded');
+        } else {
+            setStatus(data.message || 'show failed');
+        }
     }
 
     return (
@@ -140,11 +159,29 @@ function Books() {
                 <h3 style={styles.sectionTitle}>list</h3>
                 <button style={styles.button} onClick={handleList}>list all books</button>
             </div>
-
+            
+            //better books list display
             {status && <p style={styles.status}>{status}</p>}
 
-            <div>
-                <img src={"http://localhost:5000"+photo.path} alt={title}></img>
+            <div style={styles.booksGrid}>
+                {books.map((book) => (
+                    <div key={book._id} style={styles.bookCard}>
+                        <img
+                            src={`http://localhost:5000${book.path}`}
+                            alt={book.title}
+                            style={styles.bookImage}
+                        />
+                        <div style={styles.bookContent}>
+                            <h4 style={styles.bookTitle}>{book.title}</h4>
+                            <p style={styles.bookAuthor}>{book.author}</p>
+                            <p style={styles.bookGenre}>{book.genre}</p>
+                            <span style={styles.bookStatus}>{book.status}</span>
+                        </div>
+
+                        <button style={styles.smallButton} onClick={() => {setBookId(book._id); setTitle(book.title || '');
+                            setAuthor(book.authot || ''); setGenre(book.genre || ''); setGlossary(book.glossary || '');}}> select </button>
+                    </div>
+                ))}
             </div>
         </div>
     );
@@ -152,67 +189,174 @@ function Books() {
 
 const styles = {
     card: {
-        
-        border: '1px solid #eee',
-        borderRadius: '12px',
+        border: '1px solid #e8e8e8',
+        borderRadius: '18px',
         padding: '1.5rem',
+        backgroundColor: '#ffffff',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
     },
+
     title: {
-        fontSize: '15px',
-        fontWeight: 500,
-        marginBottom: '1.25rem',
+        fontSize: '22px',
+        fontWeight: 700,
+        marginBottom: '1.5rem',
+        color: '#222',
+        textTransform: 'capitalize',
     },
+
     section: {
-        marginBottom: '1.25rem',
-        paddingBottom: '1.25rem',
+        marginBottom: '1.5rem',
+        paddingBottom: '1.5rem',
         borderBottom: '1px solid #f0f0f0',
     },
+
     sectionTitle: {
-        fontSize: '12px',
-        marginBottom: '10px',
-        fontWeight: 400,
+        fontSize: '14px',
+        marginBottom: '12px',
+        fontWeight: 600,
+        color: '#444',
+        textTransform: 'capitalize',
     },
+
     grid: {
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '10px',
-        marginBottom: '10px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: '14px',
+        marginBottom: '12px',
     },
+
     field: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '4px',
+        gap: '6px',
     },
+
     label: {
-        fontSize: '12px',
+        fontSize: '13px',
+        fontWeight: 500,
+        color: '#555',
+        textTransform: 'capitalize',
     },
+
     input: {
-        padding: '8px 10px',
-        borderRadius: '8px',
-        border: '1px solid #ddd',
+        padding: '10px 12px',
+        borderRadius: '10px',
+        border: '1px solid #dcdcdc',
         fontSize: '14px',
         width: '100%',
+        outline: 'none',
+        boxSizing: 'border-box',
+        backgroundColor: '#fff',
+        color: '#222',
     },
+
     actions: {
         display: 'flex',
-        gap: '8px',
-        marginTop: '8px',
+        flexWrap: 'wrap',
+        gap: '10px',
+        marginTop: '12px',
     },
+
     button: {
-        padding: '7px 14px',
-        borderRadius: '8px',
-        border: '1px solid #ddd',
+        padding: '9px 16px',
+        borderRadius: '10px',
+        border: '1px solid #d6d6d6',
+        backgroundColor: '#ffffff',
         cursor: 'pointer',
-        fontSize: '13px',
+        fontSize: '14px',
+        fontWeight: 600,
+        transition: '0.2s',
+        color: '#222',
     },
+
     danger: {
         color: '#c0392b',
-        borderColor: '#f5c6c6',
-        fontWeight: 900,
+        borderColor: '#f0b8b8',
+        backgroundColor: '#fff7f7',
+        fontWeight: 700,
     },
+
     status: {
+        fontSize: '14px',
+        marginTop: '10px',
+        marginBottom: '14px',
+        padding: '10px 12px',
+        borderRadius: '10px',
+        backgroundColor: '#f6f7fb',
+        color: '#444',
+        border: '1px solid #ececec',
+    },
+
+    booksGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: '18px',
+        marginTop: '18px',
+    },
+
+    bookCard: {
+        display: 'flex',
+        flexDirection: 'column',
+        border: '1px solid #eeeeee',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        backgroundColor: '#ffffff',
+        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.07)',
+    },
+
+    bookImage: {
+        width: '100%',
+        height: '240px',
+        objectFit: 'cover',
+        backgroundColor: '#f3f3f3',
+    },
+
+    bookContent: {
+        padding: '14px',
+        flex: 1,
+    },
+
+    bookTitle: {
+        margin: 0,
+        fontSize: '17px',
+        fontWeight: 700,
+        color: '#222',
+        lineHeight: 1.3,
+    },
+
+    bookAuthor: {
+        margin: '7px 0 0',
+        fontSize: '14px',
+        color: '#666',
+    },
+
+    bookGenre: {
+        margin: '5px 0 0',
         fontSize: '13px',
-        marginTop: '8px',
+        color: '#888',
+    },
+
+    bookStatus: {
+        display: 'inline-block',
+        marginTop: '10px',
+        padding: '5px 10px',
+        borderRadius: '999px',
+        backgroundColor: '#eef6ee',
+        color: '#2e7d32',
+        fontSize: '12px',
+        fontWeight: 700,
+        textTransform: 'capitalize',
+    },
+
+    smallButton: {
+        margin: '0 14px 14px',
+        padding: '9px 12px',
+        borderRadius: '10px',
+        border: '1px solid #dddddd',
+        backgroundColor: '#fafafa',
+        cursor: 'pointer',
+        fontSize: '13px',
+        fontWeight: 600,
     },
 };
 

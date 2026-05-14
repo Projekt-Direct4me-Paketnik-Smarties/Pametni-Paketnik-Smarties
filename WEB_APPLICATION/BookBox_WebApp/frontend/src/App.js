@@ -20,18 +20,17 @@ function App() {
     return (
         <BrowserRouter>
             <UserContext.Provider value={{ user, setUserContext: updateUserData }}>
+
                 <Navbar />
                 <div style={styles.main}>
-                    <UserPanel />
-                    <div style={styles.grid}>
-                        <Login />
-                        <Register />
-                    </div>
-                    <Book />
-                    <Box />
+                    <Routes>
+                        <Route path="/" element={<Book />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/user-panel" element={<UserPanel />} />
+                    </Routes>
                 </div>
-                <Routes>
-                </Routes>
+
             </UserContext.Provider>
         </BrowserRouter>
     );
