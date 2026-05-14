@@ -27,7 +27,7 @@ function App() {
                         <Route path="/" element={<Book />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
-                        <Route path="/user-panel" element={<UserPanel />} />
+                        <Route path="/profile" element={<UserPanel />} />
                     </Routes>
                 </div>
 
@@ -38,18 +38,12 @@ function App() {
 
 const styles = {
     main: {
-        maxWidth: '860px',
+        width: '100%',
+        maxWidth: '1100px',
         margin: '0 auto',
-        padding: '2rem 24px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        backgroundColor: "#fdfdfd"
-    },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '16px',
+        padding: '32px 24px',
+        minHeight: 'calc(100vh - 72px)',
+        boxSizing: 'border-box',
     },
 };
 

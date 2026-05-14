@@ -26,10 +26,10 @@ function Login() {
 
     return (
         <div style={styles.card}>
-            <h2 style={styles.title}>log in</h2>
+            <h2 style={styles.title}>Welcome back, please login</h2>
             <form onSubmit={handleLogin}>
                 <div style={styles.field}>
-                    <label style={styles.label}>username</label>
+                    <label style={styles.label}>Username</label>
                     <input
                         type="text"
                         value={username}
@@ -39,7 +39,7 @@ function Login() {
                     />
                 </div>
                 <div style={styles.field}>
-                    <label style={styles.label}>password</label>
+                    <label style={styles.label}>Password</label>
                     <input
                         type="password"
                         value={password}
@@ -48,7 +48,7 @@ function Login() {
                         style={styles.input}
                     />
                 </div>
-                <button type="submit" style={styles.button}>log in</button>
+                <button type="submit" style={styles.button}>LOGIN</button>
             </form>
             {status && <p style={styles.status}>{status}</p>}
         </div>

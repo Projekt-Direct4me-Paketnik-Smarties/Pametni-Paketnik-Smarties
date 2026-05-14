@@ -7,7 +7,7 @@ function Navbar() {
 
     return (
         <nav style={styles.nav}>
-            <Link to="/" style={styles.logo}>myapp</Link>
+            <Link to="/" style={styles.logo}>BookBox</Link>
 
             <div style={styles.links}>
                 <Link to="/" style={styles.link}>Books</Link>
@@ -15,7 +15,7 @@ function Navbar() {
                 {user ? (
                     <>
                         <Link to="/profile" style={styles.link}>Profile</Link>
-                        <span style={styles.userInfo}>logged in as {user.username}</span>
+                        <span style={styles.userInfo}>Hello {user.username}!</span>
                     </>
                 ) : (
                     <>
@@ -30,33 +30,42 @@ function Navbar() {
 
 const styles = {
     nav: {
+        height: '72px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '12px 24px',
-        borderBottom: '1px solid #eee',
-        backgroundColor: '#fff',
-    },
-    userInfo: {
-        fontSize: '14px',
-        color: '#666',
+        padding: '0 32px',
+        borderBottom: '1px solid #e5e7eb',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(12px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 20,
     },
     logo: {
-    fontWeight: 600,
-    fontSize: '18px',
-    color: '#222',
-    textDecoration: 'none',
+        fontWeight: 900,
+        fontSize: '22px',
+        color: '#111827',
+        textDecoration: 'none',
+        letterSpacing: '-0.5px',
     },
     links: {
         display: 'flex',
         alignItems: 'center',
-        gap: '16px',
+        gap: '18px',
     },
     link: {
-        fontSize: '14px',
-        color: '#333',
+        fontSize: '15px',
+        color: '#374151',
         textDecoration: 'none',
-        fontWeight: 500,
+        fontWeight: 700,
+    },
+    userInfo: {
+        fontSize: '14px',
+        color: '#6b7280',
+        padding: '8px 12px',
+        borderRadius: '999px',
+        backgroundColor: '#f3f4f6',
     },
 };
 

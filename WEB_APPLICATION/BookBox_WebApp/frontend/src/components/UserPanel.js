@@ -6,82 +6,115 @@ function UserPanel() {
     const [status, setStatus] = useState('');
 
     async function handleLogout() {
-        const res = await fetch('http://localhost:5000/users/logout', {
-            credentials: 'include',
-        });
-        if (res.ok) {
-            setUserContext(null);
-        } else {
-            setStatus('logout failed');
+        try {
+            const res = await fetch('http://localhost:5000/users/logout', {
+                method: 'GET',
+                credentials: 'include',
+            });
+
+            if (res.ok) {
+                localStorage.removeItem('user');
+                setUserContext(null);
+                setStatus('Uspešno si se odjavil.');
+            } else {
+                setStatus('Odjava ni uspela.');
+            }
+        } catch (err) {
+            setStatus('Napaka pri povezavi s strežnikom.');
         }
     }
 
-    async function handleDelete() {
-        const res = await fetch(`http://localhost:5000/users/${user._id}`, {
-            method: 'DELETE',
-            credentials: 'include',
-        });
-        if (res.ok) {
-            setUserContext(null);
-        } else {
-            const data = await res.json();
-            setStatus(data.message);
-        }
+    if (!user) {
+        return (
+            <div style={styles.card}>
+                <h2 style={styles.title}>Profile</h2>
+                <p style={styles.text}>Nisi prijavljen.</p>
+            </div>
+        );
     }
-
-    if (!user) return null;
 
     return (
-        <div style={styles.panel}>
-            <div style={styles.info}>
-                <span style={styles.label}>logged in as</span><br></br>
-                <strong style={styles.username}>{user.username}</strong>
+        <div style={styles.card}>
+            <h2 style={styles.title}>Profile</h2>
+
+            <div style={styles.infoBox}>
+                <p style={styles.label}>Username</p>
+                <p style={styles.value}>{user.username}</p>
             </div>
-            <div style={styles.actions}>
-                <button onClick={handleLogout} style={styles.button}>logout</button>
-                <button onClick={handleDelete} style={{ ...styles.button, ...styles.danger }}>delete account</button>
+
+            <div style={styles.infoBox}>
+                <p style={styles.label}>Email</p>
+                <p style={styles.value}>{user.email}</p>
             </div>
+
+            <button style={styles.button} onClick={handleLogout}>
+                Logout
+            </button>
+
             {status && <p style={styles.status}>{status}</p>}
         </div>
     );
 }
 
 const styles = {
-    panel: {
-        border: '1px solid #eee',
+    card: {
+        maxWidth: '520px',
+        margin: '0 auto',
+        padding: '24px',
+        borderRadius: '18px',
+        border: '1px solid #e8e8e8',
+        backgroundColor: '#fff',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+    },
+    title: {
+        margin: '0 0 20px',
+        fontSize: '26px',
+        color: '#222',
+        textAlign: 'center',
+    },
+    infoBox: {
+        padding: '14px 16px',
         borderRadius: '12px',
-        padding: '1rem 1.25rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px',
-        fontSize:"14px"
+        backgroundColor: '#f7f7f7',
+        marginBottom: '12px',
+        border: '1px solid #eeeeee',
     },
-    username: {
-        fontSize: '15px',
-        fontWeight: 500,
+    label: {
+        margin: '0 0 4px',
+        fontSize: '13px',
+        color: '#777',
+        fontWeight: 600,
     },
-    actions: {
-        display: 'flex',
-        gap: '8px',
+    value: {
+        margin: 0,
+        fontSize: '16px',
+        color: '#222',
+        fontWeight: 700,
+    },
+    text: {
+        color: '#555',
+        textAlign: 'center',
     },
     button: {
-        padding: '7px 14px',
-        borderRadius: '8px',
+        marginTop: '14px',
+        width: '100%',
+        padding: '11px 16px',
+        borderRadius: '12px',
         border: '1px solid #ddd',
+        backgroundColor: '#222',
+        color: '#fff',
         cursor: 'pointer',
-        fontSize: '13px',
-    },
-    danger: {
-        color: '#c0392b',
-        borderColor: '#f5c6c6',
-        fontWeight: 900,
+        fontWeight: 700,
+        fontSize: '14px',
     },
     status: {
-        fontSize: '13px',
-        color: '#666',
-        width: '100%',
+        marginTop: '12px',
+        padding: '10px',
+        borderRadius: '10px',
+        backgroundColor: '#f5f5f5',
+        color: '#333',
+        textAlign: 'center',
+        fontSize: '14px',
     },
 };
 
