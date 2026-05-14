@@ -14,7 +14,15 @@ var bookSchema = new Schema({
         type: String,
         enum: ['available', 'reserved' ,'borrowed'],
         default: 'available',
-    }
+    },
+	'weight':{
+		type: Number,
+		default: 5
+	},
+		'packetBox' : {
+	 	type: Schema.Types.ObjectId,
+	 	ref: 'packetBox'
+	},
 });
 
 module.exports = mongoose.model('book', bookSchema);

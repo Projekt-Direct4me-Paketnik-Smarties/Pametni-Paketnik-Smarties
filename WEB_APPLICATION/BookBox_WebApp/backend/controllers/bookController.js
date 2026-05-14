@@ -1,4 +1,5 @@
-var BookModel = require('../models/bookModel.js');
+const BookModel = require('../models/bookModel.js');
+const PacketBoxModel = require('../models/packetBoxModel.js')
 var fs = require('fs');
 var path = require('path');
 
@@ -39,7 +40,7 @@ module.exports = {
     },
 
     create: function (req, res) {
-    const { title, author, glossary, genre } = req.body;
+    const { title, author, glossary, genre, weight } = req.body;
     if(!title || !author || !genre){
         return res.status(500).json({ message: "Missing input" });
     }
@@ -49,7 +50,8 @@ module.exports = {
             path: "/images/" + (req.file? req.file.filename: "1ef969c2acb1d69ffad3f5a19b5833f4"),
 			author : author,
 			glossary : glossary,
-			genre : genre
+			genre : genre,
+            weight: weight
         });
 
         book.save(function (err, book) {
@@ -104,6 +106,7 @@ module.exports = {
 			book.author = req.body.author ? req.body.author : book.author;
 			book.glossary = req.body.glossary ? req.body.glossary : book.glossary;
 			book.genre = req.body.genre ? req.body.genre : book.genre;
+            book.weight=req.body.weight? req.body.weight:book.weight;
 			
             book.save(function (err, book) {
                 if (err) {
@@ -121,8 +124,12 @@ module.exports = {
     /**
      * bookController.remove()
      */
-    remove: function (req, res) {
+    remove: async function (req, res) {
         var id = req.params.id;
+        await PacketBoxModel.updateMany( //remove them from any list they may be in
+            { books: id },
+            { $pull: { books: id } }
+        );
 
         BookModel.findByIdAndRemove(id, function (err, book) {
             if (err) {

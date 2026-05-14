@@ -1,15 +1,7 @@
 var ReservationModel = require('../models/reservationModel.js');
 
-/**
- * reservationController.js
- *
- * @description :: Server-side logic for managing reservations.
- */
 module.exports = {
 
-    /**
-     * reservationController.list()
-     */
     list: function (req, res) {
         ReservationModel.find(function (err, reservations) {
             if (err) {
@@ -23,9 +15,6 @@ module.exports = {
         });
     },
 
-    /**
-     * reservationController.show()
-     */
     show: function (req, res) {
         var id = req.params.id;
 
@@ -47,9 +36,6 @@ module.exports = {
         });
     },
 
-    /**
-     * reservationController.create()
-     */
     create: function (req, res) {
         var reservation = new ReservationModel({
 			user : req.body.user,

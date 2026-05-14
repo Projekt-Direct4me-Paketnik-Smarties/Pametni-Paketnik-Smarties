@@ -6,6 +6,7 @@ import Login from './components/Login.js';
 import Register from './components/Register.js';
 import UserPanel from './components/UserPanel.js';
 import Book from './components/Book.js';
+import Box from './components/Box.js';
 import './App.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
                         <Register />
                     </div>
                     <Book />
+                    <Box />
                 </div>
                 <Routes>
                 </Routes>

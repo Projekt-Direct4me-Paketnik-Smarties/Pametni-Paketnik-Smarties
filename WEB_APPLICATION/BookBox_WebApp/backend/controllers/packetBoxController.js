@@ -1,17 +1,9 @@
-var PaketboxModel = require('../models/packetBoxModel.js');
+const PacketboxModel = require('../models/packetBoxModel.js');
+const BookModel = require('../models/bookModel.js');
 
-/**
- * paketBoxController.js
- *
- * @description :: Server-side logic for managing paketBoxs.
- */
 module.exports = {
-
-    /**
-     * paketBoxController.list()
-     */
     list: function (req, res) {
-        PaketboxModel.find(function (err, paketBoxs) {
+        PacketboxModel.find(function (err, paketBoxs) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting paketBox.',
@@ -23,57 +15,59 @@ module.exports = {
         });
     },
 
-    /**
-     * paketBoxController.show()
-     */
     show: function (req, res) {
         var id = req.params.id;
 
-        PaketboxModel.findOne({_id: id}, function (err, paketBox) {
+        PacketboxModel.findOne({_id: id}, function (err, paketBox) {
             if (err) {
                 return res.status(500).json({
-                    message: 'Error when getting paketBox.',
+                    message: 'Error when getting Box.',
                     error: err
                 });
             }
 
             if (!paketBox) {
                 return res.status(404).json({
-                    message: 'No such paketBox'
+                    message: 'No such Box'
                 });
             }
 
             return res.json(paketBox);
         });
     },
-
-    /**
-     * paketBoxController.create()
-     */
     create: function (req, res) {
-        var paketBox = new PaketboxModel({
-			name : req.body.name
-        });
+        const {name, longitude, latitude } = req.body;
+        
+    try {
+        var paketBox = new PacketboxModel({
+			name : name,
+            location: longitude && latitude ? {
+                type: 'Point',
+                coordinates: [parseFloat(longitude), parseFloat(latitude)]
+            } : undefined
 
+        });
+        console.log(paketBox)
         paketBox.save(function (err, paketBox) {
             if (err) {
                 return res.status(500).json({
-                    message: 'Error when creating paketBox',
+                    message: 'Error when creating Box',
                     error: err
                 });
             }
 
             return res.status(201).json(paketBox);
-        });
+        });}
+        catch(err){
+            console.error(err);
+            res.status(500).json({ message: err.message }); 
+        }
     },
-
-    /**
-     * paketBoxController.update()
-     */
     update: function (req, res) {
-        var id = req.params.id;
+        const id = req.params.id;
+        const {name, longitude, latitude } = req.body;
 
-        PaketboxModel.findOne({_id: id}, function (err, paketBox) {
+        PacketboxModel.findOne({_id: id}, function (err, paketBox) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting paketBox',
@@ -87,7 +81,12 @@ module.exports = {
                 });
             }
 
-            paketBox.name = req.body.name ? req.body.name : paketBox.name;
+            paketBox.name = name ? name : paketBox.name;
+            paketBox.location= longitude && latitude ? {
+                type: 'Point',
+                coordinates: [parseFloat(longitude), parseFloat(latitude)]
+            } : paketBox.location
+
 			
             paketBox.save(function (err, paketBox) {
                 if (err) {
@@ -102,13 +101,15 @@ module.exports = {
         });
     },
 
-    /**
-     * paketBoxController.remove()
-     */
-    remove: function (req, res) {
+    remove: async function (req, res) {
+        try{
         var id = req.params.id;
-
-        PaketboxModel.findByIdAndRemove(id, function (err, paketBox) {
+        //this should be a transaction
+        await BookModel.updateMany(
+            { packetBox: id },
+            { $unset: { packetBox: "" } }
+        );
+        PacketboxModel.findByIdAndRemove(id, function (err, paketBox) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when deleting the paketBox.',
@@ -118,5 +119,39 @@ module.exports = {
 
             return res.status(204).json();
         });
+    }
+    catch(err){
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
+    },
+    addNewBooks: async function(req,res){
+        try {
+            const id = req.params.id;
+            let newBooks = req.body.books;
+
+            if (!Array.isArray(newBooks)) {
+                newBooks = [newBooks];
+            }
+
+            const box = await PacketboxModel.findByIdAndUpdate(
+                id,
+                { $addToSet: { books: { $each: newBooks } } }, //$addToSet does not add duplicates
+                { new: true } // returns the new array not old
+            );
+
+            if (!box) return res.status(404).json({ message: 'box not found' });
+
+
+            await BookModel.updateMany(//give the books a reference to which container they're in
+                { _id: { $in: newBooks } },
+                { $set: { packetBox: id } }
+            );
+
+            return res.json({});
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
     }
 };
