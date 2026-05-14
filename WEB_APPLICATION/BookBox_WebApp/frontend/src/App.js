@@ -20,17 +20,19 @@ function App() {
     return (
         <BrowserRouter>
             <UserContext.Provider value={{ user, setUserContext: updateUserData }}>
+                <div className="page-shell">
+                    <Navbar />
 
-                <Navbar />
-                <div style={styles.main}>
-                    <Routes>
-                        <Route path="/" element={<Book />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/profile" element={<UserPanel />} />
-                    </Routes>
+                    <main style={styles.main}>
+                        <Routes>
+                            <Route path="/" element={<Book />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/profile" element={<UserPanel />} />
+                            <Route path="/box" element={<Box />} />
+                        </Routes>
+                    </main>
                 </div>
-
             </UserContext.Provider>
         </BrowserRouter>
     );
@@ -39,10 +41,10 @@ function App() {
 const styles = {
     main: {
         width: '100%',
-        maxWidth: '1100px',
+        maxWidth: '1060px',
         margin: '0 auto',
-        padding: '32px 24px',
-        minHeight: 'calc(100vh - 72px)',
+        padding: '56px',
+        minHeight: 'calc(100vh - 96px)',
         boxSizing: 'border-box',
     },
 };

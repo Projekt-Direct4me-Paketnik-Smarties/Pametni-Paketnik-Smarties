@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 const BASE = 'http://localhost:5000/books';
+const IMAGE_BASE = 'http://localhost:5000';
 
 function Books() {
     const [title, setTitle] = useState('');
@@ -10,7 +11,6 @@ function Books() {
     const [image, setImage] = useState(null);
     const [bookId, setBookId] = useState('');
     const [status, setStatus] = useState('');
-    //const [photo, setPhoto] = useState([]);
     const [books, setBooks] = useState([]);
     const [selectedBook, setSelectedBook] = useState(null);
 
@@ -20,343 +20,642 @@ function Books() {
         fd.append('glossary', glossary);
         fd.append('genre', genre);
         fd.append('author', author);
-        if (image) fd.append('image', image);
+
+        if (image) {
+            fd.append('image', image);
+        }
+
         return fd;
+    }
+
+    function clearForm() {
+        setTitle('');
+        setAuthor('');
+        setGenre('');
+        setGlossary('');
+        setImage(null);
+        setBookId('');
+        setSelectedBook(null);
+    }
+
+    function fillForm(book) {
+        setSelectedBook(book);
+        setBookId(book._id);
+        setTitle(book.title || '');
+        setAuthor(book.author || '');
+        setGenre(book.genre || '');
+        setGlossary(book.glossary || '');
     }
 
     async function handleCreate(e) {
         e.preventDefault();
+
         const res = await fetch(`${BASE}/`, {
             method: 'POST',
             credentials: 'include',
             body: buildFormData(),
         });
-        const data = await res.json();
+
+        let data = null;
+
+        try {
+            data = await res.json();
+        } catch {
+            data = null;
+        }
+
         if (res.ok) {
-            setStatus('book created');
+            setStatus('Book created successfully.');
             console.log('created:', data);
+            await handleList();
         } else {
-            setStatus(data.message || 'create failed');
+            setStatus(data?.message || 'Create failed.');
         }
     }
 
     async function handleUpdate(e) {
         e.preventDefault();
-        if (!bookId) return setStatus('book id required for update');
+
+        if (!bookId) {
+            return setStatus('Book ID is required for update.');
+        }
+
         const res = await fetch(`${BASE}/${bookId}`, {
             method: 'PUT',
             credentials: 'include',
             body: buildFormData(),
         });
-        const data = await res.json();
+
+        let data = null;
+
+        try {
+            data = await res.json();
+        } catch {
+            data = null;
+        }
+
         if (res.ok) {
-            setStatus('book updated');
+            setStatus('Book updated successfully.');
             console.log('updated:', data);
+            await handleList();
         } else {
-            setStatus(data.message || 'update failed');
+            setStatus(data?.message || 'Update failed.');
         }
     }
 
     async function handleDelete() {
-        if (!bookId) return setStatus('book id required for delete');
+        if (!bookId) {
+            return setStatus('Book ID is required for delete.');
+        }
+
         const res = await fetch(`${BASE}/${bookId}`, {
             method: 'DELETE',
             credentials: 'include',
         });
+
         if (res.ok) {
-            setStatus('book deleted');
-            setBookId('');
+            setStatus('Book deleted successfully.');
+            clearForm();
+            setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
         } else {
-            const data = await res.json();
-            setStatus(data.message || 'delete failed');
+            let data = null;
+
+            try {
+                data = await res.json();
+            } catch {
+                data = null;
+            }
+
+            setStatus(data?.message || 'Delete failed.');
         }
     }
 
     async function handleList() {
-        const res = await fetch(`${BASE}/`, { credentials: 'include' });
+        const res = await fetch(`${BASE}/`, {
+            credentials: 'include',
+        });
+
         const data = await res.json();
 
-        console.log('list:', data);
-
-        if(res.ok) {
+        if (res.ok) {
             setBooks(data);
-            setStatus('books loaded');
+            setStatus('Books loaded.');
+            console.log('list:', data);
         } else {
-            setStatus(data.message || 'list failed');
+            setStatus(data.message || 'List failed.');
         }
-
-        /*
-        setPhoto(data[0]);
-        setBookId(data[0]._id)
-        setStatus('list logged to console');
-        */
     }
 
     async function handleShow() {
-        if (!bookId) return setStatus('book id required for show');
+        if (!bookId) {
+            return setStatus('Book ID is required for show.');
+        }
 
-        const res = await fetch(`${BASE}/${bookId}`, { credentials: 'include' });
+        const res = await fetch(`${BASE}/${bookId}`, {
+            credentials: 'include',
+        });
+
         const data = await res.json();
 
-        if(res.ok) {
-            cconsole.log('show:', data);
-            setTitle(data.title || '');
-            setAuthor(data.author || '');
-            setGenre(data.genre || '');
-            setGlossary(data.glossary || '');
-            setStatus('book loaded');
+        if (res.ok) {
+            console.log('show:', data);
+            fillForm(data);
+            setStatus('Book loaded.');
         } else {
-            setStatus(data.message || 'show failed');
+            setStatus(data.message || 'Show failed.');
         }
     }
 
+    function getStatusStyle(bookStatus) {
+        if (bookStatus === 'available') {
+            return { ...styles.bookStatus, ...styles.available };
+        }
+
+        if (bookStatus === 'reserved') {
+            return { ...styles.bookStatus, ...styles.reserved };
+        }
+
+        if (bookStatus === 'borrowed') {
+            return { ...styles.bookStatus, ...styles.borrowed };
+        }
+
+        return styles.bookStatus;
+    }
+
     return (
-        <div style={styles.card}>
-            <h2 style={styles.title}>books</h2>
+        <section style={styles.wrapper}>
+            <div style={styles.hero}>
+                <p style={styles.kicker}>Library administration</p>
+                <h1 style={styles.title}>Books</h1>
+                <p style={styles.subtitle}>
+                    Add, edit and manage books in your library collection. Select a book from the list
+                    to quickly update its information.
+                </p>
+            </div>
 
-            <div style={styles.section}>
-                <h3 style={styles.sectionTitle}>book fields</h3>
-                <div style={styles.grid}>
-                    <div style={styles.field}>
-                        <label style={styles.label}>title</label>
-                        <input style={styles.input} type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="title" />
+            <div style={styles.card}>
+                <div style={styles.cardHeader}>
+                    <div>
+                        <p style={styles.kickerSmall}>Book details</p>
+                        <h2 style={styles.cardTitle}>Add or edit book</h2>
                     </div>
+
+                    <button style={styles.outlineButton} onClick={handleList}>
+                        List books
+                    </button>
+                </div>
+
+                <div style={styles.formGrid}>
                     <div style={styles.field}>
-                        <label style={styles.label}>author</label>
-                        <input style={styles.input} type="text" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="author" />
+                        <label style={styles.label}>Title</label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Book title"
+                        />
                     </div>
+
                     <div style={styles.field}>
-                        <label style={styles.label}>genre</label>
-                        <input style={styles.input} type="text" value={genre} onChange={(e) => setGenre(e.target.value)} placeholder="genre" />
+                        <label style={styles.label}>Author</label>
+                        <input
+                            type="text"
+                            value={author}
+                            onChange={(e) => setAuthor(e.target.value)}
+                            placeholder="Book author"
+                        />
                     </div>
+
                     <div style={styles.field}>
-                        <label style={styles.label}>glossary</label>
-                        <input style={styles.input} type="text" value={glossary} onChange={(e) => setGlossary(e.target.value)} placeholder="glossary" />
+                        <label style={styles.label}>Genre</label>
+                        <input
+                            type="text"
+                            value={genre}
+                            onChange={(e) => setGenre(e.target.value)}
+                            placeholder="Genre"
+                        />
                     </div>
+
                     <div style={styles.field}>
-                        <label style={styles.label}>cover image (optional)</label>
-                        <input style={styles.input} type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} />
+                        <label style={styles.label}>Glossary</label>
+                        <input
+                            type="text"
+                            value={glossary}
+                            onChange={(e) => setGlossary(e.target.value)}
+                            placeholder="Short description"
+                        />
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Cover image</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setImage(e.target.files[0])}
+                        />
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Book ID</label>
+                        <input
+                            type="text"
+                            value={bookId}
+                            onChange={(e) => setBookId(e.target.value)}
+                            placeholder="Paste book ID"
+                        />
                     </div>
                 </div>
+
                 <div style={styles.actions}>
-                    <button style={styles.button} onClick={handleCreate}>create</button>
-                    <button style={styles.button} onClick={handleUpdate}>update</button>
+                    <button onClick={handleCreate}>Create</button>
+                    <button style={styles.outlineButton} onClick={handleUpdate}>
+                        Update
+                    </button>
+                    <button style={styles.outlineButton} onClick={handleShow}>
+                        Show
+                    </button>
+                    <button style={styles.dangerButton} onClick={handleDelete}>
+                        Delete
+                    </button>
+                    <button style={styles.textButton} onClick={clearForm}>
+                        Clear
+                    </button>
                 </div>
             </div>
 
-            <div style={styles.section}>
-                <h3 style={styles.sectionTitle}>book id</h3>
-                <div style={styles.field}>
-                    <input style={styles.input} type="text" value={bookId} onChange={(e) => setBookId(e.target.value)} placeholder="book id" />
-                </div>
-                <div style={styles.actions}>
-                    <button style={styles.button} onClick={handleShow}>show</button>
-                    <button style={{ ...styles.button, ...styles.danger }} onClick={handleDelete}>delete</button>
-                </div>
-            </div>
+            {selectedBook && (
+                <div style={styles.selectedCard}>
+                    <div>
+                        <p style={styles.kickerSmall}>Selected book</p>
+                        <h2 style={styles.selectedTitle}>{selectedBook.title}</h2>
+                        <p style={styles.selectedMeta}>
+                            {selectedBook.author} · {selectedBook.genre}
+                        </p>
+                    </div>
 
-            <div style={styles.section}>
-                <h3 style={styles.sectionTitle}>list</h3>
-                <button style={styles.button} onClick={handleList}>list all books</button>
-            </div>
-            
-            //better books list display
+                    <span style={getStatusStyle(selectedBook.status)}>
+                        {selectedBook.status}
+                    </span>
+                </div>
+            )}
+
             {status && <p style={styles.status}>{status}</p>}
 
-            <div style={styles.booksGrid}>
-                {books.map((book) => (
-                    <div key={book._id} style={styles.bookCard}>
-                        <img
-                            src={`http://localhost:5000${book.path}`}
-                            alt={book.title}
-                            style={styles.bookImage}
-                        />
-                        <div style={styles.bookContent}>
-                            <h4 style={styles.bookTitle}>{book.title}</h4>
-                            <p style={styles.bookAuthor}>{book.author}</p>
-                            <p style={styles.bookGenre}>{book.genre}</p>
-                            <span style={styles.bookStatus}>{book.status}</span>
-                        </div>
+            <div style={styles.listHeader}>
+                <div>
+                    <p style={styles.kickerSmall}>Overview</p>
+                    <h2 style={styles.cardTitle}>Book collection</h2>
+                </div>
 
-                        <button style={styles.smallButton} onClick={() => {setBookId(book._id); setTitle(book.title || '');
-                            setAuthor(book.authot || ''); setGenre(book.genre || ''); setGlossary(book.glossary || '');}}> select </button>
-                    </div>
-                ))}
+                {books.length > 0 && (
+                    <p style={styles.countText}>
+                        {books.length} {books.length === 1 ? 'book' : 'books'}
+                    </p>
+                )}
             </div>
-        </div>
+
+            {books.length === 0 ? (
+                <div style={styles.emptyState}>
+                    <p style={styles.emptyTitle}>No books loaded yet.</p>
+                    <p style={styles.emptyText}>
+                        Click “List books” to display the current library collection.
+                    </p>
+                </div>
+            ) : (
+                <div style={styles.booksGrid}>
+                    {books.map((book) => (
+                        <article key={book._id} style={styles.bookCard}>
+                            <div style={styles.imageWrap}>
+                                <img
+                                    src={`${IMAGE_BASE}${book.path}`}
+                                    alt={book.title}
+                                    style={styles.bookImage}
+                                />
+                            </div>
+
+                            <div style={styles.bookContent}>
+                                <p style={styles.bookGenre}>{book.genre || 'Unknown genre'}</p>
+                                <h3 style={styles.bookTitle}>{book.title}</h3>
+                                <p style={styles.bookAuthor}>{book.author || 'Unknown author'}</p>
+
+                                {book.glossary && (
+                                    <p style={styles.bookGlossary}>{book.glossary}</p>
+                                )}
+
+                                <span style={getStatusStyle(book.status)}>
+                                    {book.status || 'unknown'}
+                                </span>
+                            </div>
+
+                            <button
+                                style={styles.selectButton}
+                                onClick={() => fillForm(book)}
+                            >
+                                Select
+                            </button>
+                        </article>
+                    ))}
+                </div>
+            )}
+        </section>
     );
 }
 
 const styles = {
-    card: {
-        border: '1px solid #e8e8e8',
-        borderRadius: '18px',
-        padding: '1.5rem',
-        backgroundColor: '#ffffff',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+    wrapper: {
+        width: '100%',
+    },
+
+    hero: {
+        paddingBottom: '38px',
+        marginBottom: '34px',
+        borderBottom: '1px solid #e6e1d8',
+    },
+
+    kicker: {
+        margin: '0 0 14px',
+        color: '#b88a5a',
+        fontSize: '11px',
+        fontWeight: 900,
+        letterSpacing: '0.22em',
+        textTransform: 'uppercase',
     },
 
     title: {
-        fontSize: '22px',
-        fontWeight: 700,
-        marginBottom: '1.5rem',
-        color: '#222',
-        textTransform: 'capitalize',
+        margin: 0,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: 'clamp(42px, 6vw, 70px)',
+        lineHeight: 0.95,
+        fontWeight: 400,
+        color: '#171717',
+        letterSpacing: '-0.05em',
     },
 
-    section: {
-        marginBottom: '1.5rem',
-        paddingBottom: '1.5rem',
-        borderBottom: '1px solid #f0f0f0',
+    subtitle: {
+        margin: '20px 0 0',
+        maxWidth: '620px',
+        color: '#777168',
+        fontSize: '15px',
+        lineHeight: 1.8,
     },
 
-    sectionTitle: {
-        fontSize: '14px',
-        marginBottom: '12px',
-        fontWeight: 600,
-        color: '#444',
-        textTransform: 'capitalize',
+    card: {
+        backgroundColor: '#ffffff',
+        border: '1px solid #e6e1d8',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.07)',
+        padding: '32px',
+        marginBottom: '28px',
     },
 
-    grid: {
+    cardHeader: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        gap: '18px',
+        marginBottom: '26px',
+    },
+
+    kickerSmall: {
+        margin: '0 0 10px',
+        color: '#b88a5a',
+        fontSize: '10px',
+        fontWeight: 900,
+        letterSpacing: '0.18em',
+        textTransform: 'uppercase',
+    },
+
+    cardTitle: {
+        margin: 0,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '31px',
+        lineHeight: 1.05,
+        fontWeight: 400,
+        color: '#171717',
+        letterSpacing: '-0.035em',
+    },
+
+    formGrid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '14px',
-        marginBottom: '12px',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gap: '22px',
     },
 
     field: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
+        gap: '9px',
     },
 
     label: {
-        fontSize: '13px',
-        fontWeight: 500,
-        color: '#555',
-        textTransform: 'capitalize',
-    },
-
-    input: {
-        padding: '10px 12px',
-        borderRadius: '10px',
-        border: '1px solid #dcdcdc',
-        fontSize: '14px',
-        width: '100%',
-        outline: 'none',
-        boxSizing: 'border-box',
-        backgroundColor: '#fff',
-        color: '#222',
+        color: '#6f6a62',
+        fontSize: '11px',
+        fontWeight: 900,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
     },
 
     actions: {
         display: 'flex',
+        gap: '12px',
         flexWrap: 'wrap',
-        gap: '10px',
-        marginTop: '12px',
+        marginTop: '24px',
     },
 
-    button: {
-        padding: '9px 16px',
-        borderRadius: '10px',
-        border: '1px solid #d6d6d6',
+    outlineButton: {
         backgroundColor: '#ffffff',
-        cursor: 'pointer',
-        fontSize: '14px',
-        fontWeight: 600,
-        transition: '0.2s',
-        color: '#222',
+        color: '#202020',
+        border: '1px solid #cfc7ba',
     },
 
-    danger: {
-        color: '#c0392b',
-        borderColor: '#f0b8b8',
-        backgroundColor: '#fff7f7',
-        fontWeight: 700,
+    dangerButton: {
+        backgroundColor: '#ffffff',
+        color: '#b42318',
+        border: '1px solid #e7b4ad',
+    },
+
+    textButton: {
+        backgroundColor: 'transparent',
+        color: '#777168',
+        border: '1px solid transparent',
+        boxShadow: 'none',
+    },
+
+    selectedCard: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '18px',
+        padding: '22px 26px',
+        marginBottom: '28px',
+        border: '1px solid #e6e1d8',
+        backgroundColor: '#faf9f6',
+    },
+
+    selectedTitle: {
+        margin: 0,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '28px',
+        lineHeight: 1.05,
+        fontWeight: 400,
+        color: '#171717',
+    },
+
+    selectedMeta: {
+        margin: '8px 0 0',
+        color: '#777168',
+        fontSize: '13px',
     },
 
     status: {
+        margin: '0 0 28px',
+        padding: '14px 16px',
+        border: '1px solid #e6e1d8',
+        backgroundColor: '#faf9f6',
+        color: '#6f6a62',
+        fontSize: '13px',
+        lineHeight: 1.6,
+        textAlign: 'center',
+    },
+
+    listHeader: {
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        gap: '18px',
+        marginTop: '36px',
+        marginBottom: '22px',
+    },
+
+    countText: {
+        margin: 0,
+        color: '#8a867d',
+        fontSize: '11px',
+        fontWeight: 900,
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+    },
+
+    emptyState: {
+        border: '1px solid #e6e1d8',
+        backgroundColor: '#faf9f6',
+        padding: '34px',
+        textAlign: 'center',
+    },
+
+    emptyTitle: {
+        margin: 0,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '28px',
+        color: '#171717',
+    },
+
+    emptyText: {
+        margin: '10px 0 0',
+        color: '#777168',
         fontSize: '14px',
-        marginTop: '10px',
-        marginBottom: '14px',
-        padding: '10px 12px',
-        borderRadius: '10px',
-        backgroundColor: '#f6f7fb',
-        color: '#444',
-        border: '1px solid #ececec',
     },
 
     booksGrid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '18px',
-        marginTop: '18px',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+        gap: '28px',
     },
 
     bookCard: {
         display: 'flex',
         flexDirection: 'column',
-        border: '1px solid #eeeeee',
-        borderRadius: '16px',
-        overflow: 'hidden',
         backgroundColor: '#ffffff',
-        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.07)',
+        border: '1px solid #e6e1d8',
+        boxShadow: '0 12px 34px rgba(0, 0, 0, 0.08)',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+    },
+
+    imageWrap: {
+        width: '100%',
+        height: '310px',
+        overflow: 'hidden',
+        borderBottom: '1px solid #e6e1d8',
+        backgroundColor: '#efede8',
     },
 
     bookImage: {
         width: '100%',
-        height: '240px',
+        height: '100%',
         objectFit: 'cover',
-        backgroundColor: '#f3f3f3',
     },
 
     bookContent: {
-        padding: '14px',
         flex: 1,
+        padding: '20px',
+    },
+
+    bookGenre: {
+        margin: '0 0 12px',
+        color: '#b88a5a',
+        fontSize: '10px',
+        fontWeight: 900,
+        letterSpacing: '0.16em',
+        textTransform: 'uppercase',
     },
 
     bookTitle: {
         margin: 0,
-        fontSize: '17px',
-        fontWeight: 700,
-        color: '#222',
-        lineHeight: 1.3,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '27px',
+        lineHeight: 1.05,
+        fontWeight: 400,
+        color: '#171717',
+        letterSpacing: '-0.035em',
     },
 
     bookAuthor: {
-        margin: '7px 0 0',
-        fontSize: '14px',
-        color: '#666',
+        margin: '10px 0 0',
+        color: '#777168',
+        fontSize: '13px',
     },
 
-    bookGenre: {
-        margin: '5px 0 0',
+    bookGlossary: {
+        margin: '14px 0 0',
+        color: '#6f6a62',
         fontSize: '13px',
-        color: '#888',
+        lineHeight: 1.6,
     },
 
     bookStatus: {
-        display: 'inline-block',
-        marginTop: '10px',
-        padding: '5px 10px',
-        borderRadius: '999px',
-        backgroundColor: '#eef6ee',
-        color: '#2e7d32',
-        fontSize: '12px',
-        fontWeight: 700,
-        textTransform: 'capitalize',
+        display: 'inline-flex',
+        alignItems: 'center',
+        marginTop: '16px',
+        padding: '6px 10px',
+        border: '1px solid #e6e1d8',
+        backgroundColor: '#faf9f6',
+        color: '#6f6a62',
+        fontSize: '10px',
+        fontWeight: 900,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
     },
 
-    smallButton: {
-        margin: '0 14px 14px',
-        padding: '9px 12px',
-        borderRadius: '10px',
-        border: '1px solid #dddddd',
-        backgroundColor: '#fafafa',
-        cursor: 'pointer',
-        fontSize: '13px',
-        fontWeight: 600,
+    available: {
+        borderColor: '#bdd7c4',
+        backgroundColor: '#f4fbf6',
+        color: '#2f7a48',
+    },
+
+    reserved: {
+        borderColor: '#ead39b',
+        backgroundColor: '#fffaf0',
+        color: '#a06a00',
+    },
+
+    borrowed: {
+        borderColor: '#d9c2bd',
+        backgroundColor: '#fff7f5',
+        color: '#9f3a2f',
+    },
+
+    selectButton: {
+        margin: '0 20px 20px',
+        width: 'calc(100% - 40px)',
     },
 };
 
