@@ -1,9 +1,9 @@
 const BorrowModel = require('../models/borrowModel.js');
 const PacketboxModel = require('../models/packetBoxModel.js');
 const BookModel = require('../models/bookModel.js');
+const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
 
 module.exports = {
-
     listPerUser: async function(req, res) {
         try {
             const borrows = await BorrowModel.find()
@@ -205,6 +205,16 @@ module.exports = {
             console.error(err);
             res.status(500).json({ message: err.message });
         }
-    }    
-    
+    },
+    checkOverdue: async function() {
+    const cutoff = new Date(Date.now() - TWO_WEEKS);
+    const overdueBooks = await BookModel.find({
+        status: 'borrowed',
+        updatedAt: { $lt: cutoff }
+    });
+    for (const book of overdueBooks) {
+        console.log(`OVERDUE: book "${book.title}" (${book._id})`);
+    }
+    }
+
 };

@@ -23,6 +23,6 @@ var bookSchema = new Schema({
 	 	type: Schema.Types.ObjectId,
 	 	ref: 'packetBox'
 	},
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('book', bookSchema);

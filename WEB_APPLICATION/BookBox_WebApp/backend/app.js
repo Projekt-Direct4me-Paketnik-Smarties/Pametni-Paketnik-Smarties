@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 var logger = require('morgan');
 require("dotenv").config();
 
+
 const PORT = process.env.PORT || 5000;
 console.log(process.env.MONGO_URI)
 mongoose
@@ -27,6 +28,8 @@ var usersRouter = require('./routes/userRoutes');
 var bookRouter = require('./routes/bookRoutes');
 var packetBoxRouter = require('./routes/packetBoxRoutes');
 var borrowRouter = require('./routes/borrowRoutes');
+const { checkOverdue } = require('./controllers/borrowController');
+setInterval(checkOverdue, 24 * 60 * 60 * 1000); //checks for overdue on return of books
 
 var app = express();
 
