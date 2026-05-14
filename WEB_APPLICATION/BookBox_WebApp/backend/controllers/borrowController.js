@@ -1,4 +1,6 @@
-var BorrowModel = require('../models/borrowModel.js');
+const BorrowModel = require('../models/borrowModel.js');
+const PacketboxModel = require('../models/packetBoxModel.js');
+const BookModel = require('../models/bookModel.js');
 
 module.exports = {
 
@@ -44,34 +46,62 @@ module.exports = {
             return res.json(borrow);
         });
     },
+    create: async function (req, res) {
+        try{
+            let bookIds = req.body.books;
+            const boxId = req.body.packetBox;
+            const userId=req.session.userId;
+            if (!Array.isArray(bookIds)) bookIds = [bookIds];
 
-    /**
-     * borrowController.create()
-     */
-    create: function (req, res) {
-        var borrow = new BorrowModel({
-			user : req.body.user,
-			packetBox : req.body.packetBox,
-			borrowDate : req.body.borrowDate,
-			returnDate : req.body.returnDate,
-			borrowedBooks : req.body.borrowedBooks
-        });
-
-        borrow.save(function (err, borrow) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when creating borrow',
-                    error: err
+            const books = await BookModel.find({ _id: { $in: bookIds } });
+            const unavailable = books.filter(b => b.status !== 'available');
+            if (unavailable.length > 0) {
+                return res.status(400).json({
+                    message: 'Some books are not available',
+                    books: unavailable.map(b => b.title)
                 });
             }
 
-            return res.status(201).json(borrow);
-        });
-    },
+            // here must put the check that the box was open, get the weight, and then decide if the books' weight
+            // is the same as the weight of the chosen books.
 
-    /**
-     * borrowController.update()
-     */
+
+            await BookModel.updateMany(
+                { _id: { $in: bookIds } },
+                { $set: { status: 'borrowed', box: null } }
+            );
+
+            // remove books from box
+            await PacketBoxModel.updateOne(
+                { _id: boxId },
+                { $pull: { books: { $in: bookIds } } }
+            );
+
+
+            var borrow = new BorrowModel({
+                user : userId,
+                packetBox : boxId,
+                date : Date.now(),
+                books : bookIds,
+                action: "borrow"
+            });
+
+            borrow.save(function (err, borrow) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Error when borrowing books',
+                        error: err
+                    });
+                }
+
+                return res.status(201).json(borrow);
+            });
+        }
+        catch (err){
+        console.error(err);
+        res.status(500).json({ message: err.message });
+        }
+    },
     update: function (req, res) {
         var id = req.params.id;
 
@@ -90,10 +120,10 @@ module.exports = {
             }
 
             borrow.user = req.body.user ? req.body.user : borrow.user;
-			borrow.packetBox = req.body.packetBox ? req.body.packetBox : borrow.packetBox;
-			borrow.borrowDate = req.body.borrowDate ? req.body.borrowDate : borrow.borrowDate;
-			borrow.returnDate = req.body.returnDate ? req.body.returnDate : borrow.returnDate;
-			borrow.borrowedBooks = req.body.borrowedBooks ? req.body.borrowedBooks : borrow.borrowedBooks;
+			borrow.packetBox = req.body.box ? req.body.box : borrow.packetBox;
+			borrow.date = req.body.date ? req.body.date : borrow.date;
+			borrow.books = req.body.books ? req.body.books : borrow.books;
+            borrow.action=req.body.action?req.body.action:borrow.action;
 			
             borrow.save(function (err, borrow) {
                 if (err) {
@@ -107,10 +137,6 @@ module.exports = {
             });
         });
     },
-
-    /**
-     * borrowController.remove()
-     */
     remove: function (req, res) {
         var id = req.params.id;
 
@@ -124,5 +150,61 @@ module.exports = {
 
             return res.status(204).json();
         });
-    }
+    },
+    returnBooks: async function (req,res) {
+        try{
+            let bookIds = req.body.books;
+            const boxId = req.body.packetBox;
+            const userId=req.session.userId;
+
+            if (!Array.isArray(bookIds)) bookIds = [bookIds];
+            const books = await BookModel.find({ _id: { $in: bookIds } });
+            const available = books.filter(b => b.status !== 'available');
+            if (available.length > 0) {
+                return res.status(400).json({
+                    message: 'Some books are some of the box are not borrowed',
+                    books: available.map(b => b.title)
+                });
+            }
+            // HERE GOES CHECK AND OPENNIGN OF THE SESEMEA, checking weight and all that
+
+
+            await BookModel.updateMany(
+                { _id: { $in: bookIds } },
+                { $set: { status: 'available', box: boxId } }
+            );
+
+            // remove books from box
+            await PacketBoxModel.updateOne(
+                { _id: boxId },
+                { $addToSet: { books: { $each: bookIds } } }
+            );
+
+            var borrow = new BorrowModel({
+                user : userId,
+                packetBox : boxId,
+                date : Date.now(),
+                books : bookIds,
+                action: "return"
+            });
+
+            borrow.save(function (err, borrow) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Error when creating returning books',
+                        error: err
+                    });
+                }
+
+                return res.status(201).json(borrow);
+            });
+
+            
+        }
+        catch (err){
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
+    }    
+    
 };

@@ -10,9 +10,13 @@ var borrowSchema = new Schema({
 	 	type: Schema.Types.ObjectId,
 	 	ref: 'packetBox'
 	},
-	'borrowDate' : Date,
-	'returnDate' : Date,
-	'borrowedBooks' : [{ type: Schema.Types.ObjectId, ref: 'book' }]
+	'date' : Date,
+	'books' : [{ type: Schema.Types.ObjectId, ref: 'book' }],
+	'action': {
+        type: String,
+        enum: ['borrow', 'return'],
+        default: 'borrow',
+    },
 });
 
 module.exports = mongoose.model('borrow', borrowSchema);

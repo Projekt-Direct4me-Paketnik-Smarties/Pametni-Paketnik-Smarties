@@ -12,7 +12,7 @@ var bookSchema = new Schema({
 	'genre' : String,
 	'status': {
         type: String,
-        enum: ['available', 'reserved' ,'borrowed'],
+        enum: ['available', 'borrowed'],
         default: 'available',
     },
 	'weight':{
