@@ -57,7 +57,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/books', bookRouter);
 app.use('/box', packetBoxRouter);
-app.use('/reservations', reservationRouter);
+app.use('/borrow', borrowRouter);
 
 // 404
 app.use(function(req, res, next) {
