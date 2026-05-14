@@ -7,6 +7,7 @@ import Register from './components/Register.js';
 import UserPanel from './components/UserPanel.js';
 import Book from './components/Book.js';
 import Box from './components/Box.js';
+import Welcome from './components/Welcome.js';
 import './App.css';
 
 function App() {
@@ -25,11 +26,12 @@ function App() {
 
                     <main style={styles.main}>
                         <Routes>
-                            <Route path="/" element={<Book />} />
+                            <Route path="/" element={<Welcome />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
                             <Route path="/profile" element={<UserPanel />} />
                             <Route path="/box" element={<Box />} />
+                            <Route path="/books" element={<Book />} />
                         </Routes>
                     </main>
                 </div>

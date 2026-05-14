@@ -11,7 +11,8 @@ function Navbar() {
 
 
             <div style={styles.links}>
-                <Link to="/" style={styles.link} className="nav-link">Books</Link>
+                <Link to="/" style={styles.link} className="nav-link">Home</Link>
+                <Link to="/books" style={styles.link} className="nav-link">Books</Link>
                 <Link to="/box" style={styles.link} className="nav-link">Box</Link>
 
                 {user ? (
@@ -64,10 +65,10 @@ const styles = {
         borderBottom: '1px solid transparent',
     },
     userInfo: {
-        fontSize: '14px',
-        color: '#f3f3f3',
+        fontSize: '17px',
+        color: '#f7f7f7',
         padding: '4px 8px',
-        backgroundColor: '#ffd35c',
+        backgroundColor: '#ffa811',
         borderRadius: '6px',
     },
 };
