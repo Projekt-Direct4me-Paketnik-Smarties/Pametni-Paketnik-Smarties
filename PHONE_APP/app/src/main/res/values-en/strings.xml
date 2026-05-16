@@ -4,4 +4,6 @@
     <string name="navList">List</string>
     <string name="navMyBooks">My books</string>
     <string name="navProfile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="navBorrowHistory">Borrow history</string>
 </resources>

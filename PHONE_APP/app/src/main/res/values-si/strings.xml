@@ -4,4 +4,6 @@
     <string name="navList">Seznam</string>
     <string name="navMyBooks">Moje knjige</string>
     <string name="navProfile">Profil</string>
+    <string name="settings">Nastavitve</string>
+    <string name="navBorrowHistory">Zgodovina izposojenih knjig</string>
 </resources>
