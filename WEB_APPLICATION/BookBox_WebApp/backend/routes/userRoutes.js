@@ -14,17 +14,18 @@ function requiresLogin(req, res, next){
     }
 }
 
-router.get('/', userController.list)
-router.get('/:id', userController.show)
-router.get('/logout', userController.logout)
+router.get('/', userController.list);
 
+// naj bo PRED /:id
+router.get('/logout', userController.logout);
 
-router.post('/', userController.create)
-router.post('/login', userController.login)
+router.get('/:id', userController.show);
+
+router.post('/', userController.create);
+router.post('/login', userController.login);
 
 router.put('/:id', userController.update);
 
-
-router.delete('/:id',requiresLogin, userController.remove);
+router.delete('/:id', requiresLogin, userController.remove);
 
 module.exports = router;
