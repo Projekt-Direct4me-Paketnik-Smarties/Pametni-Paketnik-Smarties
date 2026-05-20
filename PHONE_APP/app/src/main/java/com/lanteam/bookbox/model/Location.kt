@@ -1,6 +1,12 @@
 package com.lanteam.bookbox.model
 
+import org.osmdroid.util.GeoPoint
+
 data class Location (
-    val latitude:Double,
-    val longitude:Double
-) {}
+    var latitude:Double,
+    var longitude:Double
+) {
+    fun toGeoPoint(): GeoPoint{
+        return GeoPoint(latitude,longitude)
+    }
+}
