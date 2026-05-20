@@ -1,6 +1,7 @@
 package com.lanteam.bookbox.ui.screen
 
 import OsmMapView
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ fun MapScreen() {
     packetBoxes.forEach { it.location.latitude+= Random.nextDouble(-0.005,0.005)
         it.location.longitude+=Random.nextDouble(-0.005,0.005)
     }
+    Log.i("Location debug", "marker location set to lat: ${packetBoxes[0].location.latitude}, long: ${packetBoxes[0].location.longitude}")
     //testing rn
     OsmMapView(
         modifier = Modifier.fillMaxSize(),

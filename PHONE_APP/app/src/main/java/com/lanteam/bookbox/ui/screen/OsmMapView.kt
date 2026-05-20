@@ -1,5 +1,6 @@
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,8 +25,7 @@ fun OsmMapView(
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
-            controller.setZoom(12.0)
-            controller.setCenter(startLocation)
+            controller.setZoom(17.0)
 
             packetBoxes.forEach { box ->
                 val marker = Marker(this).apply {
@@ -37,6 +37,10 @@ fun OsmMapView(
                 overlays.add(marker)
             }
         }
+    }
+    // Re-center when startLocation changes
+    LaunchedEffect(startLocation) { // this cuz we got a default location and then another when user permisons are set
+        mapView.controller.setCenter(startLocation)
     }
 
     DisposableEffect(Unit) { // this is basicaly like onResume and onPause, but composable doest have that so we use this. the map state still resets every time, should keep info on last location in a stateholder
