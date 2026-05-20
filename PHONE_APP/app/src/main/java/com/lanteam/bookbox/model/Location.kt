@@ -1,6 +1,6 @@
 package com.lanteam.bookbox.model
 
 data class Location (
-    val latitude:Float,
-    val longitude:Float
+    val latitude:Double,
+    val longitude:Double
 ) {}
