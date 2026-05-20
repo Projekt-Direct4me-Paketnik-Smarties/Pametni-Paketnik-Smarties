@@ -3,7 +3,11 @@ package com.lanteam.bookbox.model
 data class Book (
     val title: String,
     val author: String,
-    val summary: String
+    val summary: String,
+    val imageUrl:String="",
+    val genre:String="",
+    val status:String="available", //maybe bool?
+    val weight: Int=5
 )
 
 val sampleBooks = listOf(

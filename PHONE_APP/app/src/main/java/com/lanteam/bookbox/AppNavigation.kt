@@ -24,7 +24,7 @@ import com.lanteam.bookbox.ui.screen.QrScannerScreen
 import com.lanteam.bookbox.utils.extractBoxId
 import com.lanteam.bookbox.utils.openBoxAndPlayAudio
 import kotlinx.coroutines.launch
-import lanteam.bookbox.R
+import com.lanteam.bookbox.R
 
 
 enum class AppScreen {

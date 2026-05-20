@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "lanteam.bookbox"
+    namespace = "com.lanteam.bookbox"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "lanteam.bookbox"
+        applicationId = "com.lanteam.bookbox"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -58,6 +58,8 @@ dependencies {
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation("androidx.fragment:fragment-ktx:1.8.9")
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.livedata.ktx)
