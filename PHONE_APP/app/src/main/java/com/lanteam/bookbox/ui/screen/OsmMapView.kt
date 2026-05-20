@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.lanteam.bookbox.model.Location
 import com.lanteam.bookbox.model.PacketBox
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -14,7 +15,8 @@ import org.osmdroid.views.overlay.Marker
 @Composable
 fun OsmMapView(
     modifier: Modifier = Modifier,
-    packetBoxes: List<PacketBox> = emptyList()
+    packetBoxes: List<PacketBox> = emptyList(),
+    startLocation: Location
 ) {
     val context = LocalContext.current
 
@@ -23,7 +25,7 @@ fun OsmMapView(
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
             controller.setZoom(12.0)
-            controller.setCenter(GeoPoint(46.0, 14.5))
+            controller.setCenter(GeoPoint(startLocation.latitude, startLocation.longitude))
 
             packetBoxes.forEach { box ->
                 val marker = Marker(this).apply {
