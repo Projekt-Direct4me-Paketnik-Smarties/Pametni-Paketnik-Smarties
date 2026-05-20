@@ -38,9 +38,27 @@ fun OsmMapView(
             }
         }
     }
+    /* DONT DELETE
     // Re-center when startLocation changes
     LaunchedEffect(startLocation) { // this cuz we got a default location and then another when user permisons are set
         mapView.controller.setCenter(startLocation)
+    }
+     */
+    // TEMPORARY: random test locations, remove when API is connected, use the upper LaunchedEffect
+    LaunchedEffect(startLocation) {
+        mapView.overlays.clear()
+        packetBoxes.forEach { box ->
+            val marker = Marker(mapView).apply {
+                position = box.location.toGeoPoint()
+                title = box.name
+                icon = ContextCompat.getDrawable(context, R.drawable.marker)
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            }
+            mapView.overlays.add(marker)
+        }
+
+        mapView.controller.setCenter(startLocation)
+        mapView.invalidate()
     }
 
     DisposableEffect(Unit) { // this is basicaly like onResume and onPause, but composable doest have that so we use this. the map state still resets every time, should keep info on last location in a stateholder
