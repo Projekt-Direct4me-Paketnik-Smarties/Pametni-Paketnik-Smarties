@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.fragment)
     implementation(libs.play.services.mlkit.barcode.scanning)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.8")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
