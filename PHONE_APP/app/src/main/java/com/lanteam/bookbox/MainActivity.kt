@@ -2,8 +2,10 @@ package lanteam.bookbox
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +13,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.List
@@ -37,6 +42,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -76,7 +84,7 @@ fun BookBoxApp() {
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     IconButton(onClick = { currentScreen = AppScreen.Settings }) {
-                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.navMap))
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings))
                     }
                 }
             )
@@ -92,19 +100,19 @@ fun BookBoxApp() {
                 NavigationBarItem(
                     selected = currentScreen == AppScreen.List,
                     onClick = { currentScreen = AppScreen.List },
-                    icon = { Icon(Icons.Filled.List, contentDescription = stringResource(R.string.navMap)) },
+                    icon = { Icon(Icons.Filled.List, contentDescription = stringResource(R.string.navList)) },
                     label = { Text(text = stringResource(R.string.navList))}
                 )
                 NavigationBarItem(
                     selected = currentScreen == AppScreen.MyBooks,
                     onClick = { currentScreen = AppScreen.MyBooks },
-                    icon = { Icon(Icons.Filled.List, contentDescription = stringResource(R.string.navMap)) },
+                    icon = { Icon(Icons.Filled.List, contentDescription = stringResource(R.string.navMyBooks)) },
                     label = { Text(text = stringResource(R.string.navMyBooks))}
                 )
                 NavigationBarItem(
                     selected = currentScreen == AppScreen.Profile,
                     onClick = { currentScreen = AppScreen.Profile },
-                    icon =  {Icon(Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.navMap)) },
+                    icon =  {Icon(Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.navProfile)) },
                     label = { Text(text = stringResource(R.string.navProfile)) }
                 )
             }
@@ -149,7 +157,7 @@ fun ListScreen() {
 
 @Composable
 fun MyBooksScreen() {
-    Text("List Screen")
+    Text("My Books Screen")
 }
 
 @Composable
@@ -159,6 +167,7 @@ fun ProfileScreen(onNavigate: (AppScreen) -> Unit = {}) {
     if (isLoggedIn) {
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
@@ -167,11 +176,22 @@ fun ProfileScreen(onNavigate: (AppScreen) -> Unit = {}) {
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.maj),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(200.dp)
+                            .clip(CircleShape)
+                    )
                     Text(
                         text = "John Reader",
                         style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 4.dp)
+                        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
                     )
                     Text(
                         text = "john.reader@example.com",
@@ -208,7 +228,7 @@ fun ProfileScreen(onNavigate: (AppScreen) -> Unit = {}) {
             }
 
             Button(
-                onClick = { /* perform logout logic */ },
+                onClick = { isLoggedIn = false },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error
