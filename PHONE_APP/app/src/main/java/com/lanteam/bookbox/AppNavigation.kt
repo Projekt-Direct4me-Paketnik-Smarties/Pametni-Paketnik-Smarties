@@ -19,10 +19,10 @@ import com.lanteam.bookbox.ui.screen.BookDetailScreen
 import com.lanteam.bookbox.ui.screen.ListScreen
 import com.lanteam.bookbox.ui.screen.MapScreen
 import com.lanteam.bookbox.ui.screen.MyBooksScreen
-import com.lanteam.bookbox.ui.screen.ProfileScreen
 import com.lanteam.bookbox.ui.screen.QrScannerScreen
 import com.lanteam.bookbox.utils.extractBoxId
 import com.lanteam.bookbox.utils.openBoxAndPlayAudio
+import com.lanteam.bookbox.ui.screen.ProfileScreen
 import kotlinx.coroutines.launch
 
 enum class AppScreen {
@@ -31,7 +31,9 @@ enum class AppScreen {
     MyBooks,
     Profile,
     BookDetail,
-    QrScanner
+    QrScanner,
+    BorrowHistory,
+    EditProfile
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,6 +107,8 @@ fun BookBoxApp() {
                 AppScreen.Profile -> ProfileScreen(
                     onNavigate = { currentScreen = it }
                 )
+                AppScreen.BorrowHistory -> Text("Borrow History Screen")
+                AppScreen.EditProfile -> Text("Edit Profile Screen")
                 AppScreen.BookDetail -> BookDetailScreen(
                     book = selectedBook,
                     unlockMessage = unlockMessage,
