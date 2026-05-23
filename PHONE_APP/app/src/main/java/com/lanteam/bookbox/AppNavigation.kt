@@ -1,6 +1,7 @@
 package com.lanteam.bookbox
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -37,7 +38,6 @@ enum class AppScreen {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 fun BookBoxApp() {
     var currentScreen by remember { mutableStateOf(AppScreen.Map) }
@@ -45,6 +45,16 @@ fun BookBoxApp() {
     var unlockMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // Handle system back button
+    BackHandler(enabled = currentScreen != AppScreen.Map) {
+        currentScreen = when (currentScreen) {
+            AppScreen.EditProfile, AppScreen.BorrowHistory -> AppScreen.Profile
+            AppScreen.QrScanner -> AppScreen.BookDetail
+            AppScreen.BookDetail -> AppScreen.List
+            else -> AppScreen.Map
+        }
+    }
 
     val showBottomBar = currentScreen in listOf(
         AppScreen.Map, AppScreen.List, AppScreen.MyBooks, AppScreen.Profile
