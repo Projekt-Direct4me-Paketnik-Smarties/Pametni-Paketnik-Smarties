@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Register() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -16,6 +18,7 @@ function Register() {
         const data = await res.json();
         if (res.ok) {
             setStatus('registration successful');
+            navigate('/login');
         } else {
             setStatus(data.message);
         }
