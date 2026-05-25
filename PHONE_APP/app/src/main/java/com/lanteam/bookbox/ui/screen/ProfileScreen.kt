@@ -45,7 +45,7 @@ fun ProfileScreen(onNavigate: (AppScreen) -> Unit = {}) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.marker), //marker je PLACEHOLDER za PFP
+                        painter = painterResource(id = R.drawable.bookbox_mascot), //marker je PLACEHOLDER za PFP
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

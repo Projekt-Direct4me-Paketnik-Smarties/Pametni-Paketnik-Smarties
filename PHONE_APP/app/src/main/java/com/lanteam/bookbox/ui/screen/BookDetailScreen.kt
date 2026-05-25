@@ -130,7 +130,7 @@ fun BookDetailScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Image(
-                    painter = painterResource(id = R.drawable.marker),
+                    painter = painterResource(id = R.drawable.marker), //currently MARKER and will be replaced by book images
                     contentDescription = "Book cover",
                     modifier = Modifier
                         .fillMaxWidth()
