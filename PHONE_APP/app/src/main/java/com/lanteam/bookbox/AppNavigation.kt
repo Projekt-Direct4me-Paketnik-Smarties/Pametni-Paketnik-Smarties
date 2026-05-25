@@ -4,26 +4,40 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.lanteam.bookbox.model.sampleBooks
 import com.lanteam.bookbox.ui.screen.BookDetailScreen
 import com.lanteam.bookbox.ui.screen.ListScreen
 import com.lanteam.bookbox.ui.screen.MapScreen
 import com.lanteam.bookbox.ui.screen.MyBooksScreen
+import com.lanteam.bookbox.ui.screen.ProfileScreen
 import com.lanteam.bookbox.ui.screen.QrScannerScreen
 import com.lanteam.bookbox.utils.extractBoxId
 import com.lanteam.bookbox.utils.openBoxAndPlayAudio
-import com.lanteam.bookbox.ui.screen.ProfileScreen
 import kotlinx.coroutines.launch
 
 enum class AppScreen {
@@ -46,11 +60,10 @@ fun BookBoxApp() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Handle system back button
     BackHandler(enabled = currentScreen != AppScreen.Map) {
         currentScreen = when (currentScreen) {
             AppScreen.EditProfile, AppScreen.BorrowHistory -> AppScreen.Profile
-            AppScreen.QrScanner -> AppScreen.BookDetail
+            AppScreen.QrScanner -> AppScreen.Map
             AppScreen.BookDetail -> AppScreen.List
             else -> AppScreen.Map
         }
@@ -67,31 +80,70 @@ fun BookBoxApp() {
                 title = { Text(text = stringResource(R.string.app_name)) }
             )
         },
+        floatingActionButton = {
+            if (showBottomBar) {
+                FloatingActionButton(
+                    onClick = {
+                        unlockMessage = null
+                        currentScreen = AppScreen.QrScanner
+                    },
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .offset(y = 48.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.QrCodeScanner,
+                        contentDescription = "Scan QR",
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
                     NavigationBarItem(
                         selected = currentScreen == AppScreen.Map,
                         onClick = { currentScreen = AppScreen.Map },
-                        icon = {},
+                        icon = {
+                            Icon(Icons.Filled.Map, contentDescription = null)
+                        },
                         label = { Text(stringResource(R.string.navMap)) }
                     )
                     NavigationBarItem(
                         selected = currentScreen == AppScreen.List,
                         onClick = { currentScreen = AppScreen.List },
-                        icon = {},
+                        icon = {
+                            Icon(Icons.Filled.List, contentDescription = null)
+                        },
                         label = { Text(stringResource(R.string.navList)) }
+                    )
+                    // Prazen prostor za FAB
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = {},
+                        enabled = false,
+                        icon = {},
+                        label = {}
                     )
                     NavigationBarItem(
                         selected = currentScreen == AppScreen.MyBooks,
                         onClick = { currentScreen = AppScreen.MyBooks },
-                        icon = {},
+                        icon = {
+                            Icon(Icons.Filled.Book, contentDescription = null)
+                        },
                         label = { Text(stringResource(R.string.navMyBooks)) }
                     )
                     NavigationBarItem(
                         selected = currentScreen == AppScreen.Profile,
                         onClick = { currentScreen = AppScreen.Profile },
-                        icon = {},
+                        icon = {
+                            Icon(Icons.Filled.AccountCircle, contentDescription = null)
+                        },
                         label = { Text(stringResource(R.string.navProfile)) }
                     )
                 }
@@ -130,22 +182,21 @@ fun BookBoxApp() {
                         val boxId = extractBoxId(scannedValue)
                         if (boxId == null) {
                             unlockMessage = "Neveljaven QR: $scannedValue"
-                            currentScreen = AppScreen.BookDetail
+                            currentScreen = AppScreen.Map
                         } else {
                             unlockMessage = "Odpiram paketnik $boxId..."
-                            Toast.makeText(context, "Odpiram paketnik $boxId", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(context, "Odpiram paketnik $boxId", Toast.LENGTH_SHORT).show()
                             scope.launch {
                                 val success = openBoxAndPlayAudio(context, boxId)
                                 unlockMessage = if (success)
                                     "Zvok za paketnik $boxId je bil predvajan."
                                 else
                                     "Napaka pri odpiranju paketnika $boxId."
-                                currentScreen = AppScreen.BookDetail
+                                currentScreen = AppScreen.Map
                             }
                         }
                     },
-                    onBackClick = { currentScreen = AppScreen.BookDetail }
+                    onBackClick = { currentScreen = AppScreen.Map }
                 )
             }
         }
