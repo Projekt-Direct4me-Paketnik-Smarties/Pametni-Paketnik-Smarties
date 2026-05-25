@@ -90,7 +90,7 @@ fun BookBoxApp() {
                     shape = CircleShape,
                     modifier = Modifier
                         .size(64.dp)
-                        .offset(y = 48.dp),
+                        .offset(y = 88.dp),
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {

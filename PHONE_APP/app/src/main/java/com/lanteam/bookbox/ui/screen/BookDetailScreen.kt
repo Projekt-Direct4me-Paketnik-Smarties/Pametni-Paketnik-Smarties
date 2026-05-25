@@ -106,31 +106,6 @@ fun BookDetailScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // unlock button
-        Button(
-            onClick = onUnlockClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            Icon(
-                Icons.Filled.QrCodeScanner,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(
-                modifier = Modifier.width(8.dp)
-            )
-            Text(
-                "Unlock BookBox",
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-
         if (unlockMessage != null) {
             Spacer(modifier = Modifier.height(16.dp))
 
