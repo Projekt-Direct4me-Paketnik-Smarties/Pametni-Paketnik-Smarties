@@ -1,5 +1,6 @@
 package com.lanteam.bookbox
 
+import android.app.Application
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -34,13 +35,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lanteam.bookbox.ViewModels.UserContext
 import com.lanteam.bookbox.model.sampleBooks
 import com.lanteam.bookbox.ui.screen.BookDetailScreen
 import com.lanteam.bookbox.ui.screen.ListScreen
+import com.lanteam.bookbox.ui.screen.LoginScreen
 import com.lanteam.bookbox.ui.screen.MapScreen
 import com.lanteam.bookbox.ui.screen.MyBooksScreen
 import com.lanteam.bookbox.ui.screen.ProfileScreen
 import com.lanteam.bookbox.ui.screen.QrScannerScreen
+import com.lanteam.bookbox.ui.screen.RegisterScreen
 import com.lanteam.bookbox.utils.extractBoxId
 import com.lanteam.bookbox.utils.openBoxAndPlayAudio
 import kotlinx.coroutines.launch
@@ -53,7 +57,9 @@ enum class AppScreen {
     BookDetail,
     QrScanner,
     BorrowHistory,
-    EditProfile
+    EditProfile,
+    Register,
+    LogIn
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,11 +69,19 @@ fun BookBoxApp() {
     var selectedBook by remember { mutableStateOf(sampleBooks.first()) }
     var unlockMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val userContext = remember {UserContext(application = context.applicationContext as Application) }
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(userContext) {
+        userContext.navEvent.collect { destination ->
+            currentScreen = destination
+        }
+    }
+
 
     BackHandler(enabled = currentScreen != AppScreen.Map) {
         currentScreen = when (currentScreen) {
-            AppScreen.EditProfile, AppScreen.BorrowHistory -> AppScreen.Profile
+            AppScreen.EditProfile, AppScreen.BorrowHistory, AppScreen.LogIn, AppScreen.Register -> AppScreen.Profile
             AppScreen.QrScanner -> AppScreen.Map
             AppScreen.BookDetail -> AppScreen.List
             else -> AppScreen.Map
@@ -187,7 +201,16 @@ fun BookBoxApp() {
                 )
                 AppScreen.MyBooks -> MyBooksScreen()
                 AppScreen.Profile -> ProfileScreen(
-                    onNavigate = { currentScreen = it }
+                    onNavigate = { currentScreen = it },
+                    userContext= userContext
+                )
+                AppScreen.LogIn -> LoginScreen(
+                    onNavigate = { currentScreen = it },
+                    userContext= userContext
+                    )
+                AppScreen.Register -> RegisterScreen(
+                    onNavigate = { currentScreen = it },
+                    userContext= userContext
                 )
                 AppScreen.BorrowHistory -> Text("Borrow History Screen")
                 AppScreen.EditProfile -> Text("Edit Profile Screen")

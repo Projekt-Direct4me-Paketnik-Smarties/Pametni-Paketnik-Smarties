@@ -129,10 +129,10 @@ module.exports = {
                 return res.status(400).json({ message: 'username and password are required' });
 
             const user = await UserModel.findOne({ username });
-            if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+            if (!user) return res.status(401).json({ message: 'No such user' });
 
             const isValid = await bcrypt.compare(password, user.password);
-            if (!isValid) return res.status(401).json({ message: 'Invalid credentials' });
+            if (!isValid) return res.status(401).json({ message: 'Wrong password' });
 
             const accessToken = signAccessToken(user);
             const refreshToken = crypto.randomBytes(64).toString('hex');
