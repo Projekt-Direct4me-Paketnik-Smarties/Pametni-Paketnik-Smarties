@@ -24,6 +24,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 // Routers
 var indexRouter = require('./routes/index');
+var authRouter = require('./routes/authRoutes');
 var usersRouter = require('./routes/userRoutes');
 var bookRouter = require('./routes/bookRoutes');
 var packetBoxRouter = require('./routes/packetBoxRoutes');
@@ -57,6 +58,7 @@ app.use('/images', express.static('public/images'));
 
 // Routes
 app.use('/', indexRouter);
+app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/books', bookRouter);
 app.use('/box', packetBoxRouter);

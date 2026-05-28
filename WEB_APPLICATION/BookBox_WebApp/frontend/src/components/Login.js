@@ -1,8 +1,10 @@
 import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../userContext.js';
 
 function Login() {
     const { setUserContext } = useContext(UserContext);
+    const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [status, setStatus] = useState('');
@@ -19,6 +21,7 @@ function Login() {
         if (res.ok) {
             setUserContext(data);
             setStatus('login successful');
+            navigate('/profile');
         } else {
             setStatus(data.message);
         }
