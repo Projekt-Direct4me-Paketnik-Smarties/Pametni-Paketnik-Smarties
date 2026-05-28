@@ -1,6 +1,5 @@
 import { useState } from 'react';
-
-const BASE = 'http://localhost:5000/borrow';
+import { apiFetch } from '../apiFetch.js';
 
 function Borrow() {
     const [bookIds, setBookIds] = useState('');
@@ -12,10 +11,8 @@ function Borrow() {
         if (!bookIds) return setStatus('enter at least one book id');
         if (!boxId) return setStatus('box id required');
         const parsed = bookIds.split(',').map(s => s.trim()).filter(Boolean);
-        const res = await fetch(`${BASE}/`, {
+        const res = await apiFetch('/borrow/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ books: parsed, packetBox: boxId }),
         });
         const data = await res.json();
@@ -31,10 +28,8 @@ function Borrow() {
         if (!bookIds) return setStatus('enter at least one book id');
         if (!boxId) return setStatus('box id required');
         const parsed = bookIds.split(',').map(s => s.trim()).filter(Boolean);
-        const res = await fetch(`${BASE}/return`, {
+        const res = await apiFetch('/borrow/return', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ books: parsed, packetBox: boxId }),
         });
         const data = await res.json();
@@ -47,14 +42,14 @@ function Borrow() {
     }
 
     async function handleList() {
-        const res = await fetch(`${BASE}/`, { credentials: 'include' });
+        const res = await apiFetch(`/borrow`);
         const data = await res.json();
         console.log('list (mine):', data);
         setStatus('list logged to console');
     }
 
     async function handleListAll() {
-        const res = await fetch(`${BASE}/all`, { credentials: 'include' });
+        const res = await apiFetch(`/borrow/all`);
         const data = await res.json();
         console.log('list (all):', data);
         setStatus('all borrows logged to console');
@@ -62,7 +57,7 @@ function Borrow() {
 
     async function handleShow() {
         if (!borrowId) return setStatus('borrow id required for show');
-        const res = await fetch(`${BASE}/${borrowId}`, { credentials: 'include' });
+        const res = await apiFetch(`/borrow/${borrowId}`);
         const data = await res.json();
         console.log('show:', data);
         setStatus('show logged to console');
@@ -70,7 +65,7 @@ function Borrow() {
 
     async function handleDelete() {
         if (!borrowId) return setStatus('borrow id required for delete');
-        const res = await fetch(`${BASE}/${borrowId}`, {
+        const res = await apiFetch(`/borrow/${borrowId}`, {
             method: 'DELETE',
             credentials: 'include',
         });

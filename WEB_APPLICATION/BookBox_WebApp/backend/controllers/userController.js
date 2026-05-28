@@ -1,4 +1,18 @@
 const UserModel = require('../models/User.js');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const RefreshTokenModel = require('../models/refreshTokenModel.js');
+
+function sanitizeUser(user) {
+    return { id: user._id, username: user.username, email: user.email };
+}
+function signAccessToken(user) {
+    return jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: process.env.JWT_EXP || '1h' });
+}
+function hashToken(token) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
 module.exports = {
 
     list: function (req, res) {
@@ -108,36 +122,55 @@ module.exports = {
             });
         });
     },
-    login: function(req, res, next){
-        try{
-        UserModel.authenticate(req.body.username, req.body.password, function(err, user){
-            if(err || !user){
-                return res.status(500).json({ message:"Error logging in" });
-            }
-            req.session.userId = user._id;
-            //res.redirect('/users/profile');
-            return res.json(user);
-        });
-        }catch (err) {
-            console.error(err);
+    login: async function (req, res) {
+        try {
+            const { username, password } = req.body;
+            if (!username || !password)
+                return res.status(400).json({ message: 'username and password are required' });
+
+            const user = await UserModel.findOne({ username });
+            if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+            const isValid = await bcrypt.compare(password, user.password);
+            if (!isValid) return res.status(401).json({ message: 'Invalid credentials' });
+
+            const accessToken = signAccessToken(user);
+            const refreshToken = crypto.randomBytes(64).toString('hex');
+            const expiresAt = new Date(Date.now() + (parseInt(process.env.REFRESH_TTL_DAYS || '30') * 24 * 60 * 60 * 1000));
+            await RefreshTokenModel.create({ user: user._id, tokenHash: hashToken(refreshToken), expiresAt });
+
+            return res.status(200).json({ accessToken, refreshToken, user: sanitizeUser(user) });
+        } catch (err) {
             res.status(500).json({ message: err.message });
-            
         }
     },
 
-    logout: function(req, res, next){
-        if(req.session){
-            req.session.destroy(function(err){
-                if(err){
-                    return next(err);
-                } else{
-                    return res.status(201).json({});
-                }
-            });
+    logout: async function (req, res) {
+        try {
+            const { refreshToken } = req.body;
+            if (!refreshToken) return res.status(400).json({ message: 'refreshToken required' });
+            await RefreshTokenModel.deleteOne({ tokenHash: hashToken(refreshToken) });
+            return res.status(200).json({ message: 'Logged out' });
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    },
 
+    refresh: async function (req, res) {
+        try {
+            const { refreshToken } = req.body;
+            if (!refreshToken) return res.status(400).json({ message: 'refreshToken required' });
+
+            const record = await RefreshTokenModel.findOne({ tokenHash: hashToken(refreshToken) });
+            if (!record || record.expiresAt < new Date())
+                return res.status(401).json({ message: 'Invalid refresh token' });
+
+            const user = await UserModel.findById(record.user);
+            if (!user) return res.status(401).json({ message: 'Invalid refresh token' });
+
+            return res.status(200).json({ accessToken: signAccessToken(user) });
+        } catch (err) {
+            res.status(500).json({ message: err.message });
         }
-        else{
-            res.status(200).json({});
-        }
-    }
+    },
 }

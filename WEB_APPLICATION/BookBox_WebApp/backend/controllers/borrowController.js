@@ -4,7 +4,7 @@ const BookModel = require('../models/bookModel.js');
 const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
 
 module.exports = {
-    listPerUser: async function(req, res) {
+    list: async function(req, res) {
         try {
             const borrows = await BorrowModel.find()
                 .populate('user')
@@ -15,13 +15,12 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
-    list: async function(req, res) {
+    listPerUser: async function(req, res) {
         try {
-            const borrows = await BorrowModel.find({ user: req.session.userId })
+            const borrows = await BorrowModel.find({ user: req.user.id })  // ←
                 .populate('books');
             return res.json(borrows);
         } catch (err) {
-            console.error(err);
             res.status(500).json({ message: err.message });
         }
     },
@@ -50,7 +49,7 @@ module.exports = {
         try{
             let bookIds = req.body.books;
             const boxId = req.body.packetBox;
-            const userId=req.session.userId;
+            const userId = req.user.id;
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
 
             const books = await BookModel.find({ _id: { $in: bookIds } });
@@ -155,7 +154,7 @@ module.exports = {
         try{
             let bookIds = req.body.books;
             const boxId = req.body.packetBox;
-            const userId=req.session.userId;
+            const userId = req.user.id;
 
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
             const books = await BookModel.find({ _id: { $in: bookIds } });
