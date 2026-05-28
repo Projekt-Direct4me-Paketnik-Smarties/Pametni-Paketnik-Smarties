@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.lanteam.bookbox.ViewModels.UserContext
 import com.lanteam.bookbox.model.sampleBooks
 import com.lanteam.bookbox.ui.screen.BookDetailScreen
+import com.lanteam.bookbox.ui.screen.EditProfileScreen
 import com.lanteam.bookbox.ui.screen.ListScreen
 import com.lanteam.bookbox.ui.screen.LoginScreen
 import com.lanteam.bookbox.ui.screen.MapScreen
@@ -213,7 +214,7 @@ fun BookBoxApp() {
                     userContext= userContext
                 )
                 AppScreen.BorrowHistory -> Text("Borrow History Screen")
-                AppScreen.EditProfile -> Text("Edit Profile Screen")
+                AppScreen.EditProfile -> EditProfileScreen(userContext)
                 AppScreen.BookDetail -> BookDetailScreen(
                     book = selectedBook,
                     unlockMessage = unlockMessage,

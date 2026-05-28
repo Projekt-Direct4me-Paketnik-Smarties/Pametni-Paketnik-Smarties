@@ -1,4 +1,5 @@
 const UserModel = require('../models/User.js');
+const BorrowModel = require('../models/borrowModel.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
@@ -27,25 +28,40 @@ module.exports = {
             return res.json(users);
         });
     },
-    show: function (req, res) {
-        var id = req.params.id;
+    show: async function (req, res) {
+        try {
+            const [user, borrows] = await Promise.all([
+                UserModel.findOne({ _id: req.params.id }),
+                BorrowModel.find({ user: req.params.id }),
+            ]);
 
-        UserModel.findOne({_id: id}, function (err, user) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when getting user.',
-                    error: err
+            if (!user) return res.status(404).json({ message: 'No such user' });
+
+            const borrowedBookIds = new Set();
+            const returnedBookIds = new Set();
+
+            borrows.forEach(record => {
+                record.books.forEach(bookId => {
+                    const id = bookId.toString();
+                    record.action === 'borrow'
+                        ? borrowedBookIds.add(id)
+                        : returnedBookIds.add(id);
                 });
-            }
+            });
 
-            if (!user) {
-                return res.status(404).json({
-                    message: 'No such user'
-                });
-            }
+            const currentlyBorrowed = [...borrowedBookIds].filter(
+                id => !returnedBookIds.has(id)
+            ).length;
 
-            return res.json(user);
-        });
+            return res.json({
+                username: user.username,
+                email: user.email,
+                booksBorrowed: borrowedBookIds.size,
+                currentlyBorrowed,
+            });
+        } catch (err) {
+            return res.status(500).json({ message: 'Error when getting user.', error: err });
+        }
     },
     create: async function (req, res) {
         try{
@@ -91,6 +107,7 @@ module.exports = {
                     message: 'No such user'
                 });
             }
+            console.log("password: "+req.body.password)
 
             user.username = req.body.username ? req.body.username : user.username;
 			user.password = req.body.password ? req.body.password : user.password;
