@@ -10,6 +10,7 @@ function Login() {
     const [status, setStatus] = useState('');
 
     async function handleLogin(e) {
+        try{
         e.preventDefault();
         const res = await fetch('http://localhost:5000/users/login', {
             method: 'POST',
@@ -23,7 +24,12 @@ function Login() {
             setStatus('login successful');
             navigate('/profile');
         } else {
+            console.log("asd")
             setStatus(data.message);
+        }}
+        catch(error){
+            console.log(error.message)
+
         }
     }
 

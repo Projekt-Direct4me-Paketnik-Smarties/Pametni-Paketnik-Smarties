@@ -11,16 +11,13 @@ function UserPanel() {
                 method: 'GET',
                 credentials: 'include',
             });
-
-            if (res.ok) {
-                localStorage.removeItem('user');
-                setUserContext(null);
-                setStatus('Uspešno si se odjavil.');
-            } else {
-                setStatus('Odjava ni uspela.');
-            }
+            localStorage.removeItem('user');
+            setUserContext(null);
+            setStatus('Uspešno si se odjavil.');
+            
         } catch (err) {
-            setStatus('Napaka pri povezavi s strežnikom.');
+
+            setStatus(err.message);
         }
     }
 

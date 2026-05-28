@@ -5,6 +5,7 @@ const IMAGE_BASE = 'http://localhost:5000';
 
 function Books() {
     const [title, setTitle] = useState('');
+    const [userId, setUserId] = useState('');
     const [glossary, setGlossary] = useState('');
     const [genre, setGenre] = useState('');
     const [author, setAuthor] = useState('');
@@ -180,6 +181,22 @@ function Books() {
         }
 
         return styles.bookStatus;
+    }
+    
+    async function handleMyBooks() {
+        const res = await fetch(`${BASE}/myBook/${userId}`, {
+            credentials: 'include',
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            setBooks(data);
+            setStatus('Books loaded.');
+            console.log('list:', data);
+        } else {
+            setStatus(data.message || 'List failed.');
+        }
     }
 
     return (
@@ -358,6 +375,10 @@ function Books() {
                     ))}
                 </div>
             )}
+            <input style={styles.input} type="text" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="borrow id" />
+            <div style={styles.actions}>
+                <button style={styles.button} onClick={handleMyBooks}>myBooks</button>
+            </div>
         </section>
     );
 }

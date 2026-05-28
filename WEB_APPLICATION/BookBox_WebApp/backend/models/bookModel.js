@@ -23,6 +23,10 @@ var bookSchema = new Schema({
 	 	type: Schema.Types.ObjectId,
 	 	ref: 'packetBox'
 	},
+	'owner' : {
+	 	type: Schema.Types.ObjectId,
+	 	ref: 'user'
+	}
 }, { timestamps: true });
 
 module.exports = mongoose.model('book', bookSchema);

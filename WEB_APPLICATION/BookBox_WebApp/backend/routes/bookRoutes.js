@@ -19,6 +19,7 @@ function requiresAuth(req, res, next){
 
 
 router.get('/', bookController.list);
+router.get('/myBook/:id', bookController.myBooks);
 router.get('/:id', bookController.show);
 
 router.post('/',requiresAuth,upload.single('image'), bookController.create);

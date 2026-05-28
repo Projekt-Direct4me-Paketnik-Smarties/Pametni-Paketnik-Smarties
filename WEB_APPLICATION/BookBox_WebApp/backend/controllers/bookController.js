@@ -44,14 +44,19 @@ module.exports = {
     if(!title || !author || !genre){
         return res.status(500).json({ message: "Missing input" });
     }
+    if(!req.session.id){
+        return res.status(501).json({ message: "missing user" });
+    }
     try {
+        console.log(req.session.id)
         var book = new BookModel({
 			title : title,
             path: "/images/" + (req.file? req.file.filename: "1ef969c2acb1d69ffad3f5a19b5833f4"),
 			author : author,
 			glossary : glossary,
 			genre : genre,
-            weight: weight
+            weight: weight,
+            owner: '6a13583a052ae6a0fd5d9e6c'
         });
 
         book.save(function (err, book) {
@@ -149,5 +154,24 @@ module.exports = {
 
             return res.status(204).json();
         });
+    },
+
+    myBooks: async function (req,res){
+        const id = req.params.id;
+        console.log(id)
+        try {
+            const books = await BookModel.find({ owner: id });
+
+            if (!books || books.length === 0) {
+                return res.status(404).json({ message: 'No books found.' });
+            }
+
+            return res.json(books);
+        } catch (err) {
+            return res.status(500).json({
+                message: 'Error when getting books.',
+                error: err
+            });
+        }
     }
 };

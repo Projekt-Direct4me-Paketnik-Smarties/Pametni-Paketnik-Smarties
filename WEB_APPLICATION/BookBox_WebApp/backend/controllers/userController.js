@@ -134,6 +134,10 @@ module.exports = {
                     return res.status(201).json({});
                 }
             });
+
+        }
+        else{
+            res.status(200).json({});
         }
     }
 }
