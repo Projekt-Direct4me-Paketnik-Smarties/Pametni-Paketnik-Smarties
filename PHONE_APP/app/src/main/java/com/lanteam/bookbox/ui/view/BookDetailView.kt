@@ -1,4 +1,4 @@
-package com.lanteam.bookbox.ui.screen
+package com.lanteam.bookbox.ui.view
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,26 +9,27 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.lanteam.bookbox.model.Book
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
 import com.lanteam.bookbox.R
+import com.lanteam.bookbox.ViewModels.UserContext
 
 @Composable
 fun BookDetailScreen(
-    book: Book,
-    unlockMessage: String?,
-    onUnlockClick: () -> Unit,
+    userContext: UserContext,
     onBackClick: () -> Unit
 ) {
     Column(
@@ -70,7 +71,7 @@ fun BookDetailScreen(
                     )
                     // book title
                     Text(
-                        text = book.title,
+                        text = userContext.activeBook!!.title,
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -89,11 +90,30 @@ fun BookDetailScreen(
                             .padding(end = 4.dp)
                     )
                     Text(
-                        text = book.author,
+                        text = userContext.activeBook!!.author,
                         style = MaterialTheme.typography.bodyLarge,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+
+                if(userContext.activeBook!!.packetBoxId!=null){
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Filled.Polyline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .padding(end = 4.dp)
+                        )
+                        Text(
+                            text = userContext.activeBook!!.distance.toString() + "m",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontStyle = FontStyle.Italic,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -120,7 +140,7 @@ fun BookDetailScreen(
                     )
                 }
                 Text(
-                    text = book.summary,
+                    text = userContext.activeBook!!.summary,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
@@ -129,14 +149,12 @@ fun BookDetailScreen(
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Image(
-                    painter = painterResource(id = R.drawable.marker), //currently MARKER and will be replaced by book images
+                AsyncImage( // TODO, make it stretch actoss whole screen
+                    model = userContext.activeBook!!.imageUrl,
                     contentDescription = "Book cover",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
+                    placeholder = rememberVectorPainter(Icons.Filled.Book), //TODO rememberVectorPainter is probobaly quite expensive idk, can replace with actul images
+                    error = rememberVectorPainter(Icons.Filled.Error),
+                    modifier = Modifier.size(80.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -145,47 +163,6 @@ fun BookDetailScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (unlockMessage != null) {
-            Spacer(modifier = Modifier.height(16.dp))
 
-            val isError = unlockMessage.startsWith("Napaka") || unlockMessage.startsWith("Neveljaven")
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isError)
-                        MaterialTheme.colorScheme.errorContainer
-                    else
-                        MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (isError) Icons.Filled.Error else Icons.Filled.CheckCircle,
-                        contentDescription = null,
-                        tint = if (isError)
-                            MaterialTheme.colorScheme.error
-                        else
-                            MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(end = 4.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = unlockMessage,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (isError)
-                            MaterialTheme.colorScheme.onErrorContainer
-                        else
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-        }
     }
 }

@@ -3,7 +3,6 @@ package com.lanteam.bookbox
 import android.app.Application
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,12 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lanteam.bookbox.ViewModels.UserContext
 import com.lanteam.bookbox.model.sampleBooks
-import com.lanteam.bookbox.ui.screen.BookDetailScreen
+import com.lanteam.bookbox.ui.view.BookDetailScreen
 import com.lanteam.bookbox.ui.screen.EditProfileScreen
 import com.lanteam.bookbox.ui.screen.ListScreen
 import com.lanteam.bookbox.ui.screen.LoginScreen
@@ -208,10 +206,9 @@ fun BookBoxApp() {
             when (currentScreen) {
                 AppScreen.Map -> MapScreen(userContext)
                 AppScreen.List -> ListScreen(
-                    books = sampleBooks,
+                    userContext,
                     onBookSelected = { book ->
-                        selectedBook = book
-                        unlockMessage = null
+                        userContext.activeBook=book
                         currentScreen = AppScreen.BookDetail
                     }
                 )
@@ -231,9 +228,7 @@ fun BookBoxApp() {
                 AppScreen.BorrowHistory -> Text("Borrow History Screen")
                 AppScreen.EditProfile -> EditProfileScreen(userContext)
                 AppScreen.BookDetail -> BookDetailScreen(
-                    book = selectedBook,
-                    unlockMessage = unlockMessage,
-                    onUnlockClick = { currentScreen = AppScreen.QrScanner },
+                    userContext= userContext,
                     onBackClick = { currentScreen = AppScreen.List }
                 )
                 AppScreen.QrScanner -> QrScannerScreen(

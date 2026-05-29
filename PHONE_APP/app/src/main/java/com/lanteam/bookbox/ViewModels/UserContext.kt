@@ -1,17 +1,16 @@
 package com.lanteam.bookbox.ViewModels
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.lanteam.bookbox.AppScreen
+import com.lanteam.bookbox.model.Book
 import com.lanteam.bookbox.model.Location
 import com.lanteam.bookbox.model.PacketBox
 import com.lanteam.bookbox.model.User
@@ -19,16 +18,15 @@ import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import kotlin.Exception
+import kotlin.collections.listOf
 
 data class NetworkResponse(val code: Int, val body: String)
 
@@ -55,15 +53,32 @@ class UserContext(application: Application) : AndroidViewModel(application) {
 
     private var userId: String? = null
 
+    var activeBook: Book? =null
+
     var userState by mutableStateOf(User())
         private set
 
 
-    var packetBoxes by mutableStateOf(listOf<PacketBox>())
+    private var packetBoxess by mutableStateOf(listOf<PacketBox>())
+        private set
+
+    private var bookss by mutableStateOf(listOf<Book>())
         private set
 
     var loggedIn by mutableStateOf<Boolean>(false)
 
+
+    fun getPacketBoxes():List<PacketBox>{
+        if(packetBoxess.isEmpty())
+            fetchPacketBoxes()
+        return packetBoxess
+    }
+    fun getBooks():List<Book>{
+        if(bookss.isEmpty()){
+            fetchBooks()
+        }
+        return  bookss
+    }
 
 
 
@@ -110,6 +125,7 @@ class UserContext(application: Application) : AndroidViewModel(application) {
     fun getRefreshToken(): String? {
         return getEncryptedPrefs().getString(REFRESH_TOKEN_KEY, null)
     }
+
 
     private suspend fun refreshAccessToken(): String? {
         val refreshToken = getRefreshToken() ?: return null
@@ -300,7 +316,7 @@ class UserContext(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getPacketBoxes(){
+    fun fetchPacketBoxes(){
         scope.launch {
             try {
                 val response = fetch("/box", method = "GET")
@@ -322,7 +338,7 @@ class UserContext(application: Application) : AndroidViewModel(application) {
                             bookIds = (0 until books.length()).map { books.getString(it) } // for now maybe backend can send the entire list already
                         )
                     }
-                    packetBoxes = boxes
+                    packetBoxess = boxes
                 } else {
                     Log.e("API", "Error ${response.code}: ${response.body}")
                     _errorEvent.tryEmit("Failed to fetch boxes: ${response.code}")
@@ -334,5 +350,46 @@ class UserContext(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    
+    fun fetchBooks(){
+        scope.launch {
+            try {
+                val response = fetch("/books", method = "GET")
+
+                if (response.code in 200..299) {
+                    val result = JSONArray(response.body)
+                    Log.i("API", "result: $result")
+
+                    var booksRecieved = (0 until result.length()).map { i ->
+
+                        val item = result.getJSONObject(i)
+                        Book(
+                            id = item.getString("_id"),
+                            title = item.getString("title"),
+                            imageUrl = BASE_URL+ item.getString("path"),
+                            author = item.getString("author"),
+                            summary = item.getString("glossary"),
+                            genre = item.getString("genre"),
+                            status = item.getString("status"),
+                            weight =item.getInt("weight"),
+                            packetBoxId = if (item.has("packetBox")) item.getString("packetBox") else null
+                        )
+                    }
+                    if(userLocation!=null && packetBoxess.isNotEmpty()){
+                        for(book in booksRecieved){
+                            val box = packetBoxess.find { it.id == book.packetBoxId }
+                            box?.let { book.distance= Location.getDistanceBetweenLoations(userLocation!!, it.location) }
+                        }
+                    }
+                    bookss = booksRecieved
+
+                } else {
+                    Log.e("API", "Error ${response.code}: ${response.body}")
+                    _errorEvent.tryEmit("Failed to fetch books: ${response.code}")
+                }
+            } catch (e: Exception) {
+                Log.e("API", "Exception: ${e.message}")
+                _errorEvent.tryEmit("Failed to fetch boxes")
+            }
+        }
+    }
 }

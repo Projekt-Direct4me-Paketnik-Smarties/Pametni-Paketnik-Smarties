@@ -1,17 +1,21 @@
 package com.lanteam.bookbox.model
 
+import android.location.Location as ALocation
 import org.osmdroid.util.GeoPoint
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 data class Location (
     var latitude:Double,
     var longitude:Double
 ) {
     companion object{
-        fun getDistanceBetweenLoations(l1: Location, l2: Location):Double{
-            return sqrt((l1.latitude - l2.latitude).pow(2) + (l1.longitude - l2.longitude).pow(2))
+        fun getDistanceBetweenLoations(l1: Location, l2: Location):Float{
+            val results = FloatArray(1)
+            ALocation.distanceBetween(
+                l1.latitude, l1.longitude,
+                l2.latitude, l2.longitude,
+                results
+            )
+            return results[0]
         }
     }
     fun toGeoPoint(): GeoPoint{

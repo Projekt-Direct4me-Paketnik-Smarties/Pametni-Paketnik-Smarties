@@ -14,9 +14,7 @@ import kotlin.random.Random
 
 @Composable
 fun MapScreen(userContext: UserContext) {
-    if(userContext.packetBoxes.isEmpty()){
-        userContext.getPacketBoxes()
-    }
+    val packetBoxes=userContext.getPacketBoxes()
     var userLocation = rememberUserLocation()
     userLocation?.let{
         userContext.userLocation=Location(userLocation.latitude, userLocation.longitude)
@@ -25,7 +23,7 @@ fun MapScreen(userContext: UserContext) {
     userLocation = GeoPoint(46.543749, 15.639577)
     OsmMapView(
         modifier = Modifier.fillMaxSize(),
-        packetBoxes = userContext.packetBoxes,
+        packetBoxes = packetBoxes,
         startLocation = userLocation ?: GeoPoint(46.543749, 15.639577) //should be Maribor
     )
 }
