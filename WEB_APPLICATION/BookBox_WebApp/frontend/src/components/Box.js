@@ -6,7 +6,6 @@ function PacketBox() {
     const [longitude, setLongitude] = useState('');
     const [latitude, setLatitude] = useState('');
     const [boxId, setBoxId] = useState('');
-    const [bookIds, setBookIds] = useState('');
     const [status, setStatus] = useState('');
     const [boxes, setBoxes] = useState([]);
 
@@ -102,30 +101,6 @@ function PacketBox() {
         }
     }
 
-    async function handleAddBooks() {
-        if (!boxId) return setStatus('Box ID is required for adding books.');
-        if (!bookIds) return setStatus('Enter at least one book ID.');
-
-        const parsed = bookIds
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
-
-        const res = await apiFetch(`/box/books/${boxId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ books: parsed }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            setStatus('Books added to packet box.');
-            console.log('addBooks result:', data);
-        } else {
-            setStatus(data.message || 'Add books failed.');
-        }
-    }
-
     return (
         <section style={styles.wrapper}>
             <div style={styles.hero}>
@@ -210,25 +185,6 @@ function PacketBox() {
                         <button style={styles.dangerButton} onClick={handleDelete}>
                             Delete
                         </button>
-                    </div>
-                </div>
-
-                <div style={styles.card}>
-                    <p style={styles.kickerSmall}>Books</p>
-                    <h2 style={styles.cardTitle}>Assign books</h2>
-
-                    <div style={styles.field}>
-                        <label style={styles.label}>Book IDs</label>
-                        <input
-                            type="text"
-                            value={bookIds}
-                            onChange={(e) => setBookIds(e.target.value)}
-                            placeholder="id1, id2, id3"
-                        />
-                    </div>
-
-                    <div style={styles.actions}>
-                        <button onClick={handleAddBooks}>Add books</button>
                     </div>
                 </div>
             </div>

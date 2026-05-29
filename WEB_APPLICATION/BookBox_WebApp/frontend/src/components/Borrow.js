@@ -11,7 +11,7 @@ function Borrow() {
         if (!bookIds) return setStatus('enter at least one book id');
         if (!boxId) return setStatus('box id required');
         const parsed = bookIds.split(',').map(s => s.trim()).filter(Boolean);
-        const res = await apiFetch('/borrow/', {
+        const res = await apiFetch('/borrow/borrow', {
             method: 'POST',
             body: JSON.stringify({ books: parsed, packetBox: boxId }),
         });
@@ -23,6 +23,39 @@ function Borrow() {
             setStatus(data.message || 'borrow failed');
         }
     }
+    async function handleDonate() {
+        if (!bookIds) return setStatus('enter at least one book id');
+        if (!boxId) return setStatus('box id required');
+        const parsed = bookIds.split(',').map(s => s.trim()).filter(Boolean);
+        const res = await apiFetch('/borrow/donate/', {
+            method: 'POST',
+            body: JSON.stringify({ books: parsed, packetBox: boxId }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setStatus('donate created');
+            console.log('donated:', data);
+        } else {
+            setStatus(data.message || 'donate failed');
+        }
+    }
+    
+    async function handleReposes() {
+        if (!bookIds) return setStatus('enter at least one book id');
+        if (!boxId) return setStatus('box id required');
+        const parsed = bookIds.split(',').map(s => s.trim()).filter(Boolean);
+        const res = await apiFetch('/borrow/reposes/', {
+            method: 'POST',
+            body: JSON.stringify({ books: parsed, packetBox: boxId }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setStatus('reposes created');
+            console.log('reposed:', data);
+        } else {
+            setStatus(data.message || 'reposes failed');
+        }
+    }    
 
     async function handleReturn() {
         if (!bookIds) return setStatus('enter at least one book id');
@@ -95,6 +128,8 @@ function Borrow() {
                 <div style={styles.actions}>
                     <button style={styles.button} onClick={handleBorrow}>borrow</button>
                     <button style={styles.button} onClick={handleReturn}>return</button>
+                    <button style={styles.button} onClick={handleDonate}>donate</button>
+                    <button style={styles.button} onClick={handleReposes}>reposes</button>
                 </div>
             </div>
 

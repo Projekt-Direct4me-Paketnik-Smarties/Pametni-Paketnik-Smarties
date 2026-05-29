@@ -8,7 +8,6 @@ router.get('/', packetBoxController.list);
 router.get('/:id', packetBoxController.show);
 
 router.post('/', tokenAuth,adminAuth, packetBoxController.create);
-router.put('/books/:id', tokenAuth,adminAuth, packetBoxController.addNewBooks);
 
 router.put('/:id', tokenAuth,adminAuth, packetBoxController.update);
 

@@ -14,7 +14,7 @@ var borrowSchema = new Schema({
 	'books' : [{ type: Schema.Types.ObjectId, ref: 'book' }],
 	'action': {
         type: String,
-        enum: ['borrow', 'return'],
+        enum: ['borrow', 'return', 'reposes', 'donate'],
         default: 'borrow',
     },
 });

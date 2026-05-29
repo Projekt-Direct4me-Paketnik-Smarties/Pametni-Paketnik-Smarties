@@ -12,8 +12,8 @@ var bookSchema = new Schema({
 	'genre' : String,
 	'status': {
         type: String,
-        enum: ['available', 'borrowed'],
-        default: 'available',
+        enum: ['available', 'borrowed', 'owned'],
+        default: 'owned',
     },
 	'weight':{
 		type: Number,

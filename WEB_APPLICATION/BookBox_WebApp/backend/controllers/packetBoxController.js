@@ -107,7 +107,8 @@ module.exports = {
         //this should be a transaction
         await BookModel.updateMany(
             { packetBox: id },
-            { $unset: { packetBox: "" } }
+            { $unset: { packetBox: "" },
+            $set: { status: "owned" } }
         );
         PacketboxModel.findByIdAndRemove(id, function (err, paketBox) {
             if (err) {
@@ -121,35 +122,6 @@ module.exports = {
         });
     }
     catch(err){
-            console.error(err);
-            res.status(500).json({ message: err.message });
-        }
-    },
-    addNewBooks: async function(req,res){
-        try {
-            const id = req.params.id;
-            let newBooks = req.body.books;
-
-            if (!Array.isArray(newBooks)) {
-                newBooks = [newBooks];
-            }
-
-            const box = await PacketboxModel.findByIdAndUpdate(
-                id,
-                { $addToSet: { books: { $each: newBooks } } }, //$addToSet does not add duplicates
-                { new: true } // returns the new array not old
-            );
-
-            if (!box) return res.status(404).json({ message: 'box not found' });
-
-
-            await BookModel.updateMany(//give the books a reference to which container they're in
-                { _id: { $in: newBooks } },
-                { $set: { packetBox: id } }
-            );
-
-            return res.json({});
-        } catch (err) {
             console.error(err);
             res.status(500).json({ message: err.message });
         }

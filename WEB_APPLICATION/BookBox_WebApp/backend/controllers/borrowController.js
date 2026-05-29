@@ -45,7 +45,7 @@ module.exports = {
             return res.json(borrow);
         });
     },
-    create: async function (req, res) {
+    borrowBooks: async function (req, res) {
         try{
             let bookIds = req.body.books;
             const boxId = req.body.packetBox;
@@ -205,6 +205,114 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
+
+    donateBooks: async function (req,res) {
+        try{
+            let bookIds = req.body.books;
+            const boxId = req.body.packetBox;
+            const userId = req.user.id;
+
+            if (!Array.isArray(bookIds)) bookIds = [bookIds];
+            const books = await BookModel.find({ _id: { $in: bookIds } });
+            const available = books.filter(b => b.status !== 'owned');
+            if (available.length > 0) {
+                return res.status(400).json({
+                    message: 'Some books are not in your possesion',
+                    books: available.map(b => b.title)
+                });
+            }
+
+            await BookModel.updateMany(
+                { _id: { $in: bookIds } },
+                { $set: { status: 'available', box: boxId } }
+            );
+
+            await PacketboxModel.updateOne(
+                { _id: boxId },
+                { $addToSet: { books: { $each: bookIds } } }
+            );
+
+            var borrow = new BorrowModel({
+                user : userId,
+                packetBox : boxId,
+                date : Date.now(),
+                books : bookIds,
+                action: "donate"
+            });
+
+            borrow.save(function (err, borrow) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Error when creating donate books',
+                        error: err
+                    });
+                }
+
+                return res.status(201).json(borrow);
+            });
+
+            
+        }
+        catch (err){
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
+    },
+
+    reposesBooks: async function (req,res) {
+        try{
+            let bookIds = req.body.books;
+            const boxId = req.body.packetBox;
+            const userId = req.user.id;
+
+            if (!Array.isArray(bookIds)) bookIds = [bookIds];
+            const books = await BookModel.find({ _id: { $in: bookIds } });
+            const available = books.filter(b => b.status !== 'available' || b.owner!==userId);
+            if (available.length > 0) {
+                return res.status(400).json({
+                    message: 'Some books are not available to reposes',
+                    books: available.map(b => b.title)
+                });
+            }
+
+            await BookModel.updateMany(
+                { _id: { $in: bookIds } },
+                { $set: { status: 'owned', box: null } }
+            );
+
+            // remove books from box
+            await PacketboxModel.updateOne(
+                { _id: boxId },
+                { $pull: { books: { $in: bookIds } } }
+            );
+
+            var borrow = new BorrowModel({
+                user : userId,
+                packetBox : boxId,
+                date : Date.now(),
+                books : bookIds,
+                action: "reposes"
+            });
+
+            borrow.save(function (err, borrow) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Error when reposesing books',
+                        error: err
+                    });
+                }
+
+                return res.status(201).json(borrow);
+            });
+
+            
+        }
+        catch (err){
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
+    },
+    
     checkOverdue: async function() {
     const cutoff = new Date(Date.now() - TWO_WEEKS);
     const overdueBooks = await BookModel.find({
@@ -214,6 +322,5 @@ module.exports = {
     for (const book of overdueBooks) {
         console.log(`OVERDUE: book "${book.title}" (${book._id})`);
     }
-    }
-
+    },
 };
