@@ -26,6 +26,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -72,7 +75,18 @@ fun BookBoxApp() {
     val context = LocalContext.current
     val userContext = remember {UserContext(application = context.applicationContext as Application) }
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
+    //this is for errors
+    LaunchedEffect(userContext) {
+        userContext.errorEvent.collect { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+    //this is for redirecting after succesful AIP request
     LaunchedEffect(userContext) {
         userContext.navEvent.collect { destination ->
             currentScreen = destination
@@ -94,6 +108,7 @@ fun BookBoxApp() {
     )
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
@@ -191,7 +206,7 @@ fun BookBoxApp() {
                 .padding(innerPadding)
         ) {
             when (currentScreen) {
-                AppScreen.Map -> MapScreen()
+                AppScreen.Map -> MapScreen(userContext)
                 AppScreen.List -> ListScreen(
                     books = sampleBooks,
                     onBookSelected = { book ->

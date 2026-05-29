@@ -12,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.lanteam.bookbox.AppScreen
+import com.lanteam.bookbox.model.Location
+import com.lanteam.bookbox.model.PacketBox
 import com.lanteam.bookbox.model.User
 import org.json.JSONObject
 import java.io.OutputStreamWriter
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import kotlin.Exception
 
 data class NetworkResponse(val code: Int, val body: String)
@@ -45,13 +48,24 @@ class UserContext(application: Application) : AndroidViewModel(application) {
     private var connectionJob: Job? = null
     private val _navEvent = MutableSharedFlow<AppScreen>(extraBufferCapacity = 1)
     val navEvent: SharedFlow<AppScreen> = _navEvent
+    private val _errorEvent = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val errorEvent: SharedFlow<String> = _errorEvent
+
+    var userLocation : Location?= null;
 
     private var userId: String? = null
 
     var userState by mutableStateOf(User())
         private set
 
+
+    var packetBoxes by mutableStateOf(listOf<PacketBox>())
+        private set
+
     var loggedIn by mutableStateOf<Boolean>(false)
+
+
+
 
     init {
         val prefs = getEncryptedPrefs()
@@ -122,13 +136,21 @@ class UserContext(application: Application) : AndroidViewModel(application) {
         var token = getAccessToken()
         var response = rawRequest(path, method, body, token, headers)
 
+        if (response.code == -1) {
+            _errorEvent.tryEmit("No connection to server")
+            return response
+        }
         if (response.code == 401) {
             token = refreshAccessToken()
             if (token != null) response = rawRequest(path, method, body, token, headers)
         }
-        val json = JSONObject(response.body)
-        Log.i("API", "response code: ${response.code}, message: ${json}")
-
+        try {
+            val json = JSONObject(response.body)
+            Log.i("API", "response code: ${response.code}, message: ${json}")
+        }
+        catch(e:Exception){
+            Log.e("API", "Exception: ${e.message}")
+        }
         return response
     }
 
@@ -277,4 +299,40 @@ class UserContext(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun getPacketBoxes(){
+        scope.launch {
+            try {
+                val response = fetch("/box", method = "GET")
+
+                if (response.code in 200..299) {
+                    val result = JSONArray(response.body)
+                    Log.i("API", "result: $result")
+
+                    val boxes = (0 until result.length()).map { i ->
+                        val item = result.getJSONObject(i)
+                        val location = item.getJSONObject("location")
+                        val coordinates = location.getJSONArray("coordinates")
+                        val books = item.getJSONArray("books")
+
+                        PacketBox(
+                            id = item.getString("_id"),
+                            name = item.getString("name"),
+                            location= Location(coordinates.getDouble(1), coordinates.getDouble(0)),
+                            bookIds = (0 until books.length()).map { books.getString(it) } // for now maybe backend can send the entire list already
+                        )
+                    }
+                    packetBoxes = boxes
+                } else {
+                    Log.e("API", "Error ${response.code}: ${response.body}")
+                    _errorEvent.tryEmit("Failed to fetch boxes: ${response.code}")
+                }
+            } catch (e: Exception) {
+                Log.e("API", "Exception: ${e.message}")
+                _errorEvent.tryEmit("Failed to fetch boxes")
+            }
+        }
+    }
+
+    
 }

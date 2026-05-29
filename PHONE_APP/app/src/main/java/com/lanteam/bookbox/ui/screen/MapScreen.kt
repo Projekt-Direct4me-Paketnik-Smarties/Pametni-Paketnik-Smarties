@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.lanteam.bookbox.ViewModels.UserContext
 import com.lanteam.bookbox.model.Location
 import com.lanteam.bookbox.model.PacketBox
 import com.lanteam.bookbox.utils.rememberUserLocation
@@ -12,21 +13,19 @@ import org.osmdroid.util.GeoPoint
 import kotlin.random.Random
 
 @Composable
-fun MapScreen() {
-    val userLocation = rememberUserLocation()
-    val packetBoxes = listOf<PacketBox>(
-        PacketBox("Box1",  Location( userLocation?.latitude?: 46.0, userLocation?.longitude?:14.5)),
-        PacketBox("Box2", Location(userLocation?.latitude?:46.001, userLocation?.longitude?:14.502)),
-        PacketBox("Box3", Location(userLocation?.latitude?:46.002, userLocation?.longitude?:14.501))
-    )
-    packetBoxes.forEach { it.location.latitude+= Random.nextDouble(-0.005,0.005)
-        it.location.longitude+=Random.nextDouble(-0.005,0.005)
+fun MapScreen(userContext: UserContext) {
+    if(userContext.packetBoxes.isEmpty()){
+        userContext.getPacketBoxes()
     }
-    Log.i("Location debug", "marker location set to lat: ${packetBoxes[0].location.latitude}, long: ${packetBoxes[0].location.longitude}")
-    //testing rn
+    var userLocation = rememberUserLocation()
+    userLocation?.let{
+        userContext.userLocation=Location(userLocation.latitude, userLocation.longitude)
+    }
+    //temporary testing, change this for when in maribor
+    userLocation = GeoPoint(46.543749, 15.639577)
     OsmMapView(
         modifier = Modifier.fillMaxSize(),
-        packetBoxes = packetBoxes,
-        startLocation = userLocation ?: GeoPoint(46.0, 14.5) //should be ljubljana
+        packetBoxes = userContext.packetBoxes,
+        startLocation = userLocation ?: GeoPoint(46.543749, 15.639577) //should be Maribor
     )
 }
