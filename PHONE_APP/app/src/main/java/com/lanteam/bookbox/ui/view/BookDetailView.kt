@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
+import com.lanteam.bookbox.AppScreen
 import com.lanteam.bookbox.R
 import com.lanteam.bookbox.ViewModels.UserContext
 
@@ -192,7 +193,12 @@ fun BookDetailScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
+        if(userContext.activeBook!!.status=="owned" && userContext.activeBook!!.owner==userContext.userId){
+            Button(onClick = {userContext.removeBook()}
+            ) {
+                Text("Remove book from Database")
+            }
+        }
 
     }
 }

@@ -64,9 +64,10 @@ fun ListScreen(
                             Text(book.title, style = MaterialTheme.typography.titleMedium)
                             Text(book.author, style = MaterialTheme.typography.bodyMedium)
                         }
-                        if(book.packetBoxId!=null){
+                        if(!book.packetBoxId.isNullOrBlank()){
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("add an arrow emoji")
+                                Text(book.packetBoxId)
                                 Text(book.distance.toString() + "m", style = MaterialTheme.typography.titleMedium)
                             }
                         }

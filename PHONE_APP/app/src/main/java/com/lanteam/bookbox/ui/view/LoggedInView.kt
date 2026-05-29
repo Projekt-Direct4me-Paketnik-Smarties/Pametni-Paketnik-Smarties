@@ -40,6 +40,7 @@ fun LoggedInView(onNavigate: (AppScreen) -> Unit = {}, userContext: UserContext)
 
     var status by remember { mutableStateOf("") }
     val userState = userContext.userState
+    if(userState.username.isBlank())
     userContext.getUserProfile(onResult = {status=it})
 
     Column(

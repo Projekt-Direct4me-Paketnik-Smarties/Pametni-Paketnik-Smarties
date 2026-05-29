@@ -71,6 +71,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-text-google-fonts:1.7.8")
     implementation ("androidx.security:security-crypto:1.1.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("androidx.activity:activity-compose:1.9.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

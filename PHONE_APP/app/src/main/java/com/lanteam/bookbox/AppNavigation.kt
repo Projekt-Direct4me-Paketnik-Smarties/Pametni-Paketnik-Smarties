@@ -37,7 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lanteam.bookbox.ViewModels.UserContext
-import com.lanteam.bookbox.model.sampleBooks
+import com.lanteam.bookbox.ui.screen.CreateBookScreen
 import com.lanteam.bookbox.ui.view.BookDetailScreen
 import com.lanteam.bookbox.ui.screen.EditProfileScreen
 import com.lanteam.bookbox.ui.screen.ListScreen
@@ -61,14 +61,15 @@ enum class AppScreen {
     BorrowHistory,
     EditProfile,
     Register,
-    LogIn
+    LogIn,
+    CreateBook
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookBoxApp() {
     var currentScreen by remember { mutableStateOf(AppScreen.Map) }
-    var selectedBook by remember { mutableStateOf(sampleBooks.first()) }
+    var previousScreen by remember { mutableStateOf(AppScreen.List) }
     var unlockMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val userContext = remember {UserContext(application = context.applicationContext as Application) }
@@ -97,6 +98,7 @@ fun BookBoxApp() {
             AppScreen.EditProfile, AppScreen.BorrowHistory, AppScreen.LogIn, AppScreen.Register -> AppScreen.Profile
             AppScreen.QrScanner -> AppScreen.Map
             AppScreen.BookDetail -> AppScreen.List
+            AppScreen.CreateBook -> AppScreen.MyBooks
             else -> AppScreen.Map
         }
     }
@@ -204,15 +206,25 @@ fun BookBoxApp() {
                 .padding(innerPadding)
         ) {
             when (currentScreen) {
+                AppScreen.CreateBook -> CreateBookScreen(userContext)
                 AppScreen.Map -> MapScreen(userContext)
                 AppScreen.List -> ListScreen(
                     userContext,
                     onBookSelected = { book ->
                         userContext.activeBook=book
                         currentScreen = AppScreen.BookDetail
+                        previousScreen= AppScreen.List
                     }
                 )
-                AppScreen.MyBooks -> MyBooksScreen()
+                AppScreen.MyBooks -> MyBooksScreen(
+                    onNavigate = { currentScreen = it },
+                    userContext= userContext,
+                    onBookSelected = { book ->
+                        userContext.activeBook=book
+                        currentScreen = AppScreen.BookDetail
+                        previousScreen= AppScreen.MyBooks
+                    }
+                )
                 AppScreen.Profile -> ProfileScreen(
                     onNavigate = { currentScreen = it },
                     userContext= userContext
@@ -229,7 +241,7 @@ fun BookBoxApp() {
                 AppScreen.EditProfile -> EditProfileScreen(userContext)
                 AppScreen.BookDetail -> BookDetailScreen(
                     userContext= userContext,
-                    onBackClick = { currentScreen = AppScreen.List }
+                    onBackClick = { currentScreen = previousScreen }
                 )
                 AppScreen.QrScanner -> QrScannerScreen(
                     onQrScanned = { scannedValue ->

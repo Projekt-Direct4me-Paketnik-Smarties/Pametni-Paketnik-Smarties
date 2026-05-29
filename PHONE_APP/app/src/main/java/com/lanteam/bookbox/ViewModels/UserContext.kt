@@ -1,6 +1,8 @@
 package com.lanteam.bookbox.ViewModels
 
 import android.app.Application
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +53,7 @@ class UserContext(application: Application) : AndroidViewModel(application) {
 
     var userLocation : Location?= null;
 
-    private var userId: String? = null
+    var userId: String? = null
 
     var activeBook: Book? =null
 
@@ -62,7 +64,7 @@ class UserContext(application: Application) : AndroidViewModel(application) {
     private var packetBoxess by mutableStateOf(listOf<PacketBox>())
         private set
 
-    private var bookss by mutableStateOf(listOf<Book>())
+    private var bookss by mutableStateOf<List<Book>>(emptyList())
         private set
 
     var loggedIn by mutableStateOf<Boolean>(false)
@@ -78,6 +80,9 @@ class UserContext(application: Application) : AndroidViewModel(application) {
             fetchBooks()
         }
         return  bookss
+    }
+    fun getMyBooks():List<Book>{
+        return getBooks().filter { it.owner == userId }
     }
 
 
@@ -165,7 +170,7 @@ class UserContext(application: Application) : AndroidViewModel(application) {
             Log.i("API", "response code: ${response.code}, message: ${json}")
         }
         catch(e:Exception){
-            Log.e("API", "Exception: ${e.message}")
+            Log.e("API", "Fetch Exception: ${e.message}")
         }
         return response
     }
@@ -206,7 +211,74 @@ class UserContext(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // performAuth now uses fetch() instead of makePostRequest()
+
+    suspend fun uploadImage(
+        path: String,
+        method: String = "POST",
+        imageBytes: ByteArray,
+        mimeType: String = "image/jpeg",
+        fields: Map<String, String> = emptyMap(), // 👈
+        extraHeaders: Map<String, String> = emptyMap()
+    ): NetworkResponse {
+        var token = getAccessToken()
+        var response = rawMultipartRequest(path, method, imageBytes, mimeType, token, fields, extraHeaders)
+
+        if (response.code == 401) {
+            token = refreshAccessToken()
+            if (token != null) response = rawMultipartRequest(path, method, imageBytes, mimeType, token, fields, extraHeaders)
+        }
+
+        return response
+    }
+
+    private suspend fun rawMultipartRequest(
+        path: String,
+        method: String,
+        imageBytes: ByteArray,
+        mimeType: String,
+        token: String?,
+        fields: Map<String, String> = emptyMap(), // 👈 text fields alongside the image
+        extraHeaders: Map<String, String> = emptyMap()
+    ): NetworkResponse = withContext(Dispatchers.IO) {
+        try {
+            val boundary = "Boundary-${System.currentTimeMillis()}"
+            val url = URL("$BASE_URL$path")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = method
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+            if (token != null) connection.setRequestProperty("Authorization", "Bearer $token")
+            extraHeaders.forEach { (k, v) -> connection.setRequestProperty(k, v) }
+            connection.doOutput = true
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+
+            connection.outputStream.use { output ->
+                // Write text fields first
+                fields.forEach { (key, value) ->
+                    output.write("--$boundary\r\nContent-Disposition: form-data; name=\"$key\"\r\n\r\n$value\r\n".toByteArray())
+                }
+
+                // Write image field named "image" to match multer's upload.single('image')
+                output.write("--$boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"upload\"\r\nContent-Type: $mimeType\r\n\r\n".toByteArray())
+                output.write(imageBytes)
+                output.write("\r\n--$boundary--\r\n".toByteArray())
+            }
+
+            val code = connection.responseCode
+            val text = if (code in 200..299)
+                connection.inputStream.bufferedReader().readText()
+            else
+                connection.errorStream?.bufferedReader()?.readText() ?: "No error body"
+
+            NetworkResponse(code, text)
+        } catch (e: Exception) {
+            NetworkResponse(-1, e.message ?: "Unknown error")
+        }
+    }
+    fun Uri.toByteArray(context: Context): ByteArray {
+        return context.contentResolver.openInputStream(this)?.use { it.readBytes() } ?: byteArrayOf()
+    }
+
     fun performAuth(
         type: String,
         user: String,
@@ -359,19 +431,20 @@ class UserContext(application: Application) : AndroidViewModel(application) {
                     val result = JSONArray(response.body)
                     Log.i("API", "result: $result")
 
-                    var booksRecieved = (0 until result.length()).map { i ->
+                    val booksRecieved = (0 until result.length()).map { i ->
 
                         val item = result.getJSONObject(i)
                         Book(
                             id = item.getString("_id"),
                             title = item.getString("title"),
                             imageUrl = BASE_URL+ item.getString("path"),
-                            author = item.getString("author"),
-                            summary = item.getString("glossary"),
-                            genre = item.getString("genre"),
+                            author = if(item.has("author")) item.getString("author") else "",
+                            summary = if(item.has("glossary")) item.getString("glossary") else "",
+                            genre = if(item.has("genre")) item.getString("genre") else "",
                             status = item.getString("status"),
                             weight =item.getInt("weight"),
-                            packetBoxId = if (item.has("packetBox")) item.getString("packetBox") else null
+                            owner=item.getString("owner"),
+                            packetBoxId = if (item.has("packetBox") && item.getString("packetBox")!="null") item.getString("packetBox") else null
                         )
                     }
                     if(userLocation!=null && packetBoxess.isNotEmpty()){
@@ -388,8 +461,77 @@ class UserContext(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                 Log.e("API", "Exception: ${e.message}")
-                _errorEvent.tryEmit("Failed to fetch boxes")
+                _errorEvent.tryEmit("Failed to fetch books")
             }
         }
     }
+    fun addBook(
+        title: String,
+        author: String,
+        genre: String,
+        glossary: String = "",
+        weight: String = "",
+        imageUri: Uri?,
+        onResult: (String) -> Unit
+    ) {
+        scope.launch {
+            try {
+                val response = if (imageUri != null) {
+                    // Has image — send as multipart
+                    val bytes = imageUri.toByteArray(context)
+                    uploadImage(
+                        path = "/books",
+                        imageBytes = bytes,
+                        fields = buildMap {
+                            put("title", title)
+                            put("author", author)
+                            put("genre", genre)
+                            if (glossary.isNotBlank()) put("glossary", glossary)
+                            if (weight.isNotBlank()) put("weight", weight)
+                        }
+                    )
+                } else {
+                    // No image — send as regular JSON
+                    fetch(
+                        path = "/books",
+                        method = "POST",
+                        body = JSONObject().apply {
+                            put("title", title)
+                            put("author", author)
+                            put("genre", genre)
+                            if (glossary.isNotBlank()) put("glossary", glossary)
+                            if (weight.isNotBlank()) put("weight", weight)
+                        }
+                    )
+                }
+
+                if (response.code in 200..299) {
+                    fetchBooks()
+                    _navEvent.tryEmit(AppScreen.MyBooks)
+                } else {
+                    onResult("Error ${response.code}: ${response.body}")
+                }
+            } catch (e: Exception) {
+                onResult("Error: ${e.message}")
+            }
+        }
+    }
+    fun removeBook(){
+        scope.launch {
+            val response = fetch(
+                "/books/${activeBook!!.id}",
+                method = "DELETE"
+            )
+
+            if (response.code in 200..299) {
+                fetchBooks()
+                _navEvent.tryEmit(AppScreen.MyBooks)
+            }
+            else{
+                _errorEvent.tryEmit("Something went wrong.  ${response.code}")
+            }
+        }
+
+    }
+
 }
