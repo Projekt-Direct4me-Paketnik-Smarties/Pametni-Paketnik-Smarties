@@ -33,7 +33,7 @@ fun ListScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Available Books", style = MaterialTheme.typography.headlineSmall)
+        Text("All Books", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(8.dp))
         Text("Tap a book to open its detail screen.", style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(16.dp))

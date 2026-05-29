@@ -67,7 +67,7 @@ module.exports = {
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'borrowed', box: null } }
+                { $set: { status: 'borrowed', packetBox: null } }
             );
 
             // remove books from box
@@ -170,7 +170,7 @@ module.exports = {
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'available', box: boxId } }
+                { $set: { status: 'available', packetBox: boxId } }
             );
 
             // remove books from box
@@ -224,7 +224,7 @@ module.exports = {
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'available', box: boxId } }
+                { $set: { status: 'available', packetBox: boxId } }
             );
 
             await PacketboxModel.updateOne(
@@ -267,7 +267,9 @@ module.exports = {
 
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
             const books = await BookModel.find({ _id: { $in: bookIds } });
-            const available = books.filter(b => b.status !== 'available' || b.owner!==userId);
+            const available = books.filter(
+                b => b.status !== 'available' || !b.owner.equals(userId)
+            );
             if (available.length > 0) {
                 return res.status(400).json({
                     message: 'Some books are not available to reposes',
@@ -277,7 +279,7 @@ module.exports = {
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'owned', box: null } }
+                { $set: { status: 'owned', packetBox: null } }
             );
 
             // remove books from box
