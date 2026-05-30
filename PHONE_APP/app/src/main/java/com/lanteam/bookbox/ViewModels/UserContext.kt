@@ -13,6 +13,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.lanteam.bookbox.AppScreen
 import com.lanteam.bookbox.model.Book
+import com.lanteam.bookbox.model.Borrow
 import com.lanteam.bookbox.model.Location
 import com.lanteam.bookbox.model.PacketBox
 import com.lanteam.bookbox.model.User
@@ -31,6 +32,9 @@ import kotlin.Exception
 import kotlin.collections.listOf
 
 data class NetworkResponse(val code: Int, val body: String)
+enum class BoxAction { BORROW, RETURN, DONATE, REPOSSESS }
+
+// Add to UserContext
 
 private val BASE_URL = "http://192.168.1.18:5000"
 //private val BASE_URL = "http://192.168.0.14:5000"
@@ -61,20 +65,19 @@ class UserContext(application: Application) : AndroidViewModel(application) {
         private set
 
 
-    private var packetBoxess by mutableStateOf(listOf<PacketBox>())
+    var packetBoxess by mutableStateOf(listOf<PacketBox>())
         private set
 
-    private var bookss by mutableStateOf<List<Book>>(emptyList())
+    var bookss by mutableStateOf<List<Book>>(emptyList())
+        private set
+
+    var borrowHistory by mutableStateOf<List<Borrow>>(emptyList())
         private set
 
     var loggedIn by mutableStateOf<Boolean>(false)
 
 
-    fun getPacketBoxes():List<PacketBox>{
-        if(packetBoxess.isEmpty())
-            fetchPacketBoxes()
-        return packetBoxess
-    }
+    var activeBoxId:String?=null
     fun getBooks():List<Book>{
         if(bookss.isEmpty()){
             fetchBooks()
@@ -85,6 +88,20 @@ class UserContext(application: Application) : AndroidViewModel(application) {
         return getBooks().filter { it.owner == userId }
     }
 
+    fun getDonateBooks():List<Book>{
+        return getMyBooks().filter { it.status=="owned" }
+    }
+    fun getReposesBooks():List<Book>{
+        return getMyBooks().filter { it.status=="available" && !it.packetBoxId.isNullOrBlank() && it.packetBoxId==activeBoxId }
+    }
+    fun getReturnBooks():List<Book>{
+        //here call a fetch to get all the users borrows
+        return getBooks().filter { it.status == "borrowed" && !it.currentBorrower.isNullOrBlank() && it.currentBorrower==userId}
+    }
+
+    fun getBorrowBooks():List<Book>{
+        return getBooks().filter {it.status=="available" && !it.packetBoxId.isNullOrBlank() && it.packetBoxId==activeBoxId}
+    }
 
 
     init {
@@ -278,6 +295,49 @@ class UserContext(application: Application) : AndroidViewModel(application) {
     fun Uri.toByteArray(context: Context): ByteArray {
         return context.contentResolver.openInputStream(this)?.use { it.readBytes() } ?: byteArrayOf()
     }
+    fun JSONObject.optStringOrNull(key: String): String? {
+        val value = optString(key, null)
+        return if (value == null || value == "null") null else value
+    }
+    private suspend fun playOpenBoxAudio(boxId: Int): Boolean {
+        // TODO: uncomment when hardware available
+//    return withContext(Dispatchers.IO) {
+//        try {
+//            val client = OkHttpClient()
+//            val json = JSONObject().apply {
+//                put("boxId", boxId)
+//                put("qrCodeInfo", "String")
+//                put("tokenFormat", 5)
+//                put("addAccessLog", true)
+//            }
+//            val body = json.toString().toRequestBody("application/json".toMediaType())
+//            val request = Request.Builder()
+//                .url("https://api-d4me-stage.direct4.me/sandbox/v1/Access/openbox")
+//                .addHeader("Authorization", "Bearer 9ea96945-3a37-4638-a5d4-22e89fbc998f")
+//                .post(body)
+//                .build()
+//            val response = client.newCall(request).execute()
+//            if (!response.isSuccessful) return@withContext false
+//            val responseText = response.body?.string() ?: return@withContext false
+//            val audioBase64 = JSONObject(responseText).getString("data")
+//            val audioBytes = Base64.decode(audioBase64, Base64.DEFAULT)
+//            val audioFile = File(application.cacheDir, "openbox_audio.mp3")
+//            audioFile.writeBytes(audioBytes)
+//            withContext(Dispatchers.Main) {
+//                MediaPlayer().apply {
+//                    setDataSource(audioFile.absolutePath)
+//                    prepare()
+//                    start()
+//                    setOnCompletionListener { it.release() }
+//                }
+//            }
+//            true
+//        } catch (e: Exception) {
+//            false
+//        }
+//    }
+        return true // stub — always succeeds for now
+    }
 
     fun performAuth(
         type: String,
@@ -307,6 +367,7 @@ class UserContext(application: Application) : AndroidViewModel(application) {
                         )
                         loggedIn = true
                         userId = userJson.getString("id")
+                        getUserProfile({})
 
                         _navEvent.tryEmit(AppScreen.Profile)
                     } catch (e: Exception) {
@@ -407,7 +468,8 @@ class UserContext(application: Application) : AndroidViewModel(application) {
                             id = item.getString("_id"),
                             name = item.getString("name"),
                             location= Location(coordinates.getDouble(1), coordinates.getDouble(0)),
-                            bookIds = (0 until books.length()).map { books.getString(it) } // for now maybe backend can send the entire list already
+                            bookIds = (0 until books.length()).map { books.getString(it) }, // for now maybe backend can send the entire list already
+                            packetBoxId = if(item.has("packetBoxId") && item.getString("packetBoxId")!="") item.getString("packetBoxId") else ""
                         )
                     }
                     packetBoxess = boxes
@@ -444,12 +506,13 @@ class UserContext(application: Application) : AndroidViewModel(application) {
                             status = item.getString("status"),
                             weight =item.getInt("weight"),
                             owner=item.getString("owner"),
-                            packetBoxId = if (item.has("packetBox") && item.getString("packetBox")!="null") item.getString("packetBox") else null
+                            currentBorrower= item.optStringOrNull("currentBorrower"),
+                            packetBoxId = item.optStringOrNull("packetBox")
                         )
                     }
                     if(userLocation!=null && packetBoxess.isNotEmpty()){
                         for(book in booksRecieved){
-                            val box = packetBoxess.find { it.id == book.packetBoxId }
+                            val box = packetBoxess.find { it.packetBoxId == book.packetBoxId }
                             box?.let { book.distance= Location.getDistanceBetweenLoations(userLocation!!, it.location) }
                         }
                     }
@@ -532,6 +595,88 @@ class UserContext(application: Application) : AndroidViewModel(application) {
             }
         }
 
+    }
+
+    fun performBoxAction(
+        action: BoxAction,
+        bookIds: List<String>,
+        onResult: (String) -> Unit
+    ) {
+        scope.launch {
+            try {
+                // Step 1: play audio to physically open box
+                val opened = playOpenBoxAudio(activeBoxId!!.toInt())
+                if (!opened) {
+                    onResult("Failed to open box")
+                    return@launch
+                }
+
+                val endpoint = when (action) {
+                    BoxAction.BORROW     -> "/borrow/borrow"
+                    BoxAction.RETURN     -> "/borrow/return"
+                    BoxAction.DONATE     -> "/borrow/donate"
+                    BoxAction.REPOSSESS  -> "/borrow/reposes"
+                }
+
+                val body = JSONObject().apply {
+                    put("packetBox", activeBoxId!!)
+                    put("books", org.json.JSONArray(bookIds))
+                }
+
+                val response = fetch(endpoint, method = "POST", body = body)
+
+                if (response.code in 200..299) {
+                    fetchBooks()
+                    _navEvent.tryEmit(AppScreen.Map)
+                } else {
+                    onResult("Error ${response.code}: ${response.body}")
+                }
+            } catch (e: Exception) {
+                _errorEvent.tryEmit("Error: ${e.message}")
+            }
+        }
+    }
+    fun fetchBorrows(){
+        scope.launch {
+            try {
+                val response = fetch("/borrow", method = "GET")
+
+                if (response.code in 200..299) {
+                    val result = JSONArray(response.body)
+                    borrowHistory = (0 until result.length()).map { i ->
+                        val item = result.getJSONObject(i)
+                        val booksArray = item.getJSONArray("books")
+
+                        Borrow(
+                            packetBox = item.optString("packetBox", ""),
+                            date = item.getString("date"),
+                            action = item.getString("action"),
+                            books = (0 until booksArray.length()).map { j ->
+                                val book = booksArray.getJSONObject(j)
+                                Book(
+                                    id = book.getString("_id"),
+                                    title = book.getString("title"),
+                                    author = book.getString("author"),
+                                    summary = book.optString("glossary", ""),
+                                    imageUrl = book.optString("path", ""),
+                                    genre = book.optString("genre", ""),
+                                    status = book.optString("status", "available"),
+                                    weight = book.optInt("weight", 5),
+                                    packetBoxId = book.optStringOrNull("packetBox"),
+                                    owner = book.optString("owner", ""),
+                                    currentBorrower = book.optStringOrNull("currentBorrower")
+                                )
+                            }
+                        )
+                    }.sortedByDescending { it.date }
+                } else {
+                    _errorEvent.tryEmit("Failed to fetch borrow history: ${response.code}")
+                }
+            } catch (e: Exception) {
+                Log.e("API", "Exception: ${e.message}")
+                _errorEvent.tryEmit("Failed to fetch borrow history")
+            }
+        }
     }
 
 }

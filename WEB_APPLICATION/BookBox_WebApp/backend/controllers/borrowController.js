@@ -61,18 +61,20 @@ module.exports = {
                 });
             }
 
-            // here must put the check that the box was open, get the weight, and then decide if the books' weight
-            // is the same as the weight of the chosen books.
-
-
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'borrowed', packetBox: null } }
+                {
+                    $set: {
+                        status: 'borrowed',
+                        currentBorrower: userId,
+                        packetBox: ""
+                    }
+                }
             );
 
             // remove books from box
             await PacketboxModel.updateOne(
-                { _id: boxId },
+                { packetBoxId: boxId },
                 { $pull: { books: { $in: bookIds } } }
             );
 
@@ -158,24 +160,36 @@ module.exports = {
 
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
             const books = await BookModel.find({ _id: { $in: bookIds } });
-            const available = books.filter(b => b.status !== 'borrowed');
-            if (available.length > 0) {
+            const invalidBooks = books.filter(
+                b =>
+                    b.status !== 'borrowed' ||
+                    !b.currentBorrower?.equals(userId)
+            );
+
+            if (invalidBooks.length > 0) {
                 return res.status(400).json({
-                    message: 'Some books are not borrowed',
-                    books: available.map(b => b.title)
+                    message: 'Some books are not borrowed by this user',
+                    books: invalidBooks.map(b => b.title)
                 });
             }
-            // HERE GOES CHECK AND OPENNIGN OF THE SESEMEA, checking weight and all that
 
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'available', packetBox: boxId } }
+                {
+                    $set: {
+                        status: 'available',
+                        packetBox: boxId
+                    },
+                    $unset: {
+                        currentBorrower: ""
+                    }
+                }
             );
 
             // remove books from box
             await PacketboxModel.updateOne(
-                { _id: boxId },
+                { packetBoxId: boxId },
                 { $addToSet: { books: { $each: bookIds } } }
             );
 
@@ -211,7 +225,7 @@ module.exports = {
             let bookIds = req.body.books;
             const boxId = req.body.packetBox;
             const userId = req.user.id;
-
+            console.log("boxId: "+boxId)
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
             const books = await BookModel.find({ _id: { $in: bookIds } });
             const available = books.filter(b => b.status !== 'owned');
@@ -221,17 +235,20 @@ module.exports = {
                     books: available.map(b => b.title)
                 });
             }
+            console.log("all books available")
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
                 { $set: { status: 'available', packetBox: boxId } }
             );
 
+            console.log("books updated")
             await PacketboxModel.updateOne(
-                { _id: boxId },
+                { packetBoxId: boxId },
                 { $addToSet: { books: { $each: bookIds } } }
             );
 
+            console.log("packetBox Updated")
             var borrow = new BorrowModel({
                 user : userId,
                 packetBox : boxId,
@@ -240,6 +257,7 @@ module.exports = {
                 action: "donate"
             });
 
+            console.log("borrow created")
             borrow.save(function (err, borrow) {
                 if (err) {
                     return res.status(500).json({
@@ -251,6 +269,7 @@ module.exports = {
                 return res.status(201).json(borrow);
             });
 
+            console.log("borrow saved")
             
         }
         catch (err){
@@ -279,12 +298,12 @@ module.exports = {
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'owned', packetBox: null } }
+                { $set: { status: 'owned', packetBox: "" } }
             );
 
             // remove books from box
             await PacketboxModel.updateOne(
-                { _id: boxId },
+                { packetBoxId: boxId },
                 { $pull: { books: { $in: bookIds } } }
             );
 

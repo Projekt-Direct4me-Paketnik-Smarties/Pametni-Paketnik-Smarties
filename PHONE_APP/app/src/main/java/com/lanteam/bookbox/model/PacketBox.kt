@@ -5,6 +5,7 @@ data class PacketBox(
   val name:String,
   val location: Location,
   val bookIds: List<String> = listOf<String>(),
-  val books:List<Book> = listOf<Book>()
+  val books:List<Book> = listOf<Book>(),
+  val packetBoxId:String=""
 ) {}
 

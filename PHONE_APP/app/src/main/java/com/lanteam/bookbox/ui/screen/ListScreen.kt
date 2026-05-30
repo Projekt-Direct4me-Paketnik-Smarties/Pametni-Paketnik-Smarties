@@ -10,6 +10,11 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -25,7 +30,11 @@ fun ListScreen(
     onBookSelected: (Book) -> Unit
 
 ) {
-    val books = userContext.getBooks()
+    LaunchedEffect(Unit) {
+        if (userContext.bookss.isEmpty()) {
+            userContext.fetchBooks()
+        }
+    }
 
 
     Column(
@@ -39,7 +48,7 @@ fun ListScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(books) { book ->
+            items(userContext.bookss) { book ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -67,7 +76,7 @@ fun ListScreen(
                         if(!book.packetBoxId.isNullOrBlank()){
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("add an arrow emoji")
-                                Text(book.packetBoxId)
+                                Text("box: "+book.packetBoxId)
                                 Text(book.distance.toString() + "m", style = MaterialTheme.typography.titleMedium)
                             }
                         }

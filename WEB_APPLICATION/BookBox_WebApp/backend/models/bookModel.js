@@ -20,13 +20,18 @@ var bookSchema = new Schema({
 		default: 5
 	},
 		'packetBox' : {
-	 	type: Schema.Types.ObjectId,
-	 	ref: 'packetBox'
+	 	type: String,
+		default: null
 	},
 	'owner' : {
 	 	type: Schema.Types.ObjectId,
 	 	ref: 'user'
-	}
+	},
+	'currentBorrower': {
+		type: Schema.Types.ObjectId,
+		ref: 'user',
+		default: null
+	},
 }, { timestamps: true });
 
 module.exports = mongoose.model('book', bookSchema);

@@ -11,5 +11,6 @@ data class Book (
     val weight: Int =5,
     val packetBoxId: String? =null,
     var distance: Float?=null,
-    val owner:String=""
+    val owner:String="",
+    val currentBorrower:String?=null
 )

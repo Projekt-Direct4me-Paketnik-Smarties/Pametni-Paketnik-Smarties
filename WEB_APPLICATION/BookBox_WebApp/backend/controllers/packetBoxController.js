@@ -101,29 +101,34 @@ module.exports = {
         });
     },
 
-    remove: async function (req, res) {
-        try{
-        var id = req.params.id;
-        //this should be a transaction
-        await BookModel.updateMany(
-            { packetBox: id },
-            { $unset: { packetBox: "" },
-            $set: { status: "owned" } }
-        );
-        PacketboxModel.findByIdAndRemove(id, function (err, paketBox) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when deleting the paketBox.',
-                    error: err
-                });
-            }
+ remove: async function (req, res) {
+    try {
+        const id = req.params.id;
 
-            return res.status(204).json();
+        // TODO: wrap in a MongoDB transaction
+        const packetBox = await PacketboxModel.findByIdAndDelete(id);
+
+        if (!packetBox) {
+            return res.status(404).json({
+                message: 'PacketBox not found'
+            });
+        }
+
+        await BookModel.updateMany(
+            { packetBox: packetBox._id },
+            {
+                $unset: { packetBox: "" },
+                $set: { status: "owned" }
+            }
+        );
+
+        return res.sendStatus(204);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            message: 'Error when deleting the packetBox.',
+            error: err.message
         });
     }
-    catch(err){
-            console.error(err);
-            res.status(500).json({ message: err.message });
-        }
-    }
+}
 };

@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lanteam.bookbox.ViewModels.UserContext
+import com.lanteam.bookbox.ui.screen.BorrowHistoryScreen
 import com.lanteam.bookbox.ui.screen.CreateBookScreen
 import com.lanteam.bookbox.ui.view.BookDetailScreen
 import com.lanteam.bookbox.ui.screen.EditProfileScreen
@@ -45,10 +46,10 @@ import com.lanteam.bookbox.ui.screen.LoginScreen
 import com.lanteam.bookbox.ui.screen.MapScreen
 import com.lanteam.bookbox.ui.screen.MyBooksScreen
 import com.lanteam.bookbox.ui.screen.ProfileScreen
-import com.lanteam.bookbox.ui.screen.QrScannerScreen
 import com.lanteam.bookbox.ui.screen.RegisterScreen
+import com.lanteam.bookbox.ui.view.ActionSelectionView
+import com.lanteam.bookbox.ui.view.QrScannerView
 import com.lanteam.bookbox.utils.extractBoxId
-import com.lanteam.bookbox.utils.openBoxAndPlayAudio
 import kotlinx.coroutines.launch
 
 enum class AppScreen {
@@ -62,7 +63,8 @@ enum class AppScreen {
     EditProfile,
     Register,
     LogIn,
-    CreateBook
+    CreateBook,
+    ActionSelection
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,7 +98,7 @@ fun BookBoxApp() {
     BackHandler(enabled = currentScreen != AppScreen.Map) {
         currentScreen = when (currentScreen) {
             AppScreen.EditProfile, AppScreen.BorrowHistory, AppScreen.LogIn, AppScreen.Register -> AppScreen.Profile
-            AppScreen.QrScanner -> AppScreen.Map
+            AppScreen.QrScanner , AppScreen.ActionSelection-> AppScreen.Map
             AppScreen.BookDetail -> AppScreen.List
             AppScreen.CreateBook -> AppScreen.MyBooks
             else -> AppScreen.Map
@@ -207,6 +209,9 @@ fun BookBoxApp() {
         ) {
             when (currentScreen) {
                 AppScreen.CreateBook -> CreateBookScreen(userContext)
+                AppScreen.ActionSelection-> ActionSelectionView(
+                    userContext
+                )
                 AppScreen.Map -> MapScreen(userContext)
                 AppScreen.List -> ListScreen(
                     userContext,
@@ -237,31 +242,23 @@ fun BookBoxApp() {
                     onNavigate = { currentScreen = it },
                     userContext= userContext
                 )
-                AppScreen.BorrowHistory -> Text("Borrow History Screen")
+                AppScreen.BorrowHistory -> BorrowHistoryScreen(userContext)
                 AppScreen.EditProfile -> EditProfileScreen(userContext)
                 AppScreen.BookDetail -> BookDetailScreen(
                     userContext= userContext,
                     onBackClick = { currentScreen = previousScreen }
                 )
-                AppScreen.QrScanner -> QrScannerScreen(
+                AppScreen.QrScanner -> QrScannerView(
                     onQrScanned = { scannedValue ->
                         val boxId = extractBoxId(scannedValue)
                         if (boxId == null) {
-                            unlockMessage = "Neveljaven QR: $scannedValue"
                             currentScreen = AppScreen.Map
                         } else {
-                            unlockMessage = "Odpiram paketnik $boxId..."
-                            Toast.makeText(context, "Odpiram paketnik $boxId", Toast.LENGTH_SHORT).show()
-                            scope.launch {
-                                val success = openBoxAndPlayAudio(context, boxId)
-                                unlockMessage = if (success)
-                                    "Zvok za paketnik $boxId je bil predvajan."
-                                else
-                                    "Napaka pri odpiranju paketnika $boxId."
-                                currentScreen = AppScreen.Map
-                            }
+                            userContext.activeBoxId = boxId.toString()
+                            currentScreen = AppScreen.ActionSelection
                         }
                     },
+                    userContext,
                     onBackClick = { currentScreen = AppScreen.Map }
                 )
             }

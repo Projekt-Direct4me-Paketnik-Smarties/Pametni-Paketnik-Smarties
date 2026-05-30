@@ -1,5 +1,6 @@
 const UserModel = require('../models/User.js');
 const BorrowModel = require('../models/borrowModel.js');
+const BookModel = require('../models/bookModel.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
@@ -30,37 +31,44 @@ module.exports = {
     },
     show: async function (req, res) {
         try {
-            const [user, borrows] = await Promise.all([
-                UserModel.findOne({ _id: req.params.id }),
-                BorrowModel.find({ user: req.params.id }),
+            const userId = req.params.id;
+
+            const [user, borrowRecords, currentlyBorrowed] = await Promise.all([
+                UserModel.findById(userId),
+
+                BorrowModel.find({
+                    user: userId,
+                    action: 'borrow'
+                }).select('books'),
+
+                BookModel.countDocuments({
+                    currentBorrower: userId
+                })
             ]);
 
-            if (!user) return res.status(404).json({ message: 'No such user' });
-
-            const borrowedBookIds = new Set();
-            const returnedBookIds = new Set();
-
-            borrows.forEach(record => {
-                record.books.forEach(bookId => {
-                    const id = bookId.toString();
-                    record.action === 'borrow'
-                        ? borrowedBookIds.add(id)
-                        : returnedBookIds.add(id);
+            if (!user) {
+                return res.status(404).json({
+                    message: 'No such user'
                 });
-            });
+            }
 
-            const currentlyBorrowed = [...borrowedBookIds].filter(
-                id => !returnedBookIds.has(id)
-            ).length;
+            const booksBorrowed = borrowRecords.reduce(
+                (total, record) => total + record.books.length,
+                0
+            );
 
             return res.json({
                 username: user.username,
                 email: user.email,
-                booksBorrowed: borrowedBookIds.size,
-                currentlyBorrowed,
+                booksBorrowed,
+                currentlyBorrowed
             });
+
         } catch (err) {
-            return res.status(500).json({ message: 'Error when getting user.', error: err });
+            return res.status(500).json({
+                message: 'Error when getting user.',
+                error: err.message
+            });
         }
     },
     create: async function (req, res) {

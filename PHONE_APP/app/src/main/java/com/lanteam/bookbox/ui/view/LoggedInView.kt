@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,9 +41,11 @@ fun LoggedInView(onNavigate: (AppScreen) -> Unit = {}, userContext: UserContext)
 
     var status by remember { mutableStateOf("") }
     val userState = userContext.userState
-    if(userState.username.isBlank())
-    userContext.getUserProfile(onResult = {status=it})
-
+    LaunchedEffect(Unit) {
+        if (userState.username.isBlank() || !userContext.activeBoxId.isNullOrBlank()) { //refetch if the user has "borroed" anything, to update the amoung of borrows
+            userContext.getUserProfile(onResult = { status = it })
+        }
+    }
     Column(
     modifier = Modifier
     .verticalScroll(rememberScrollState())

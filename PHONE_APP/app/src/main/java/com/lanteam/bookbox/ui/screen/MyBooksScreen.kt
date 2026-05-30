@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -28,18 +29,26 @@ fun MyBooksScreen(
     onBookSelected: (Book) -> Unit
 ) {
 
+    LaunchedEffect(Unit) {
+        if (userContext.bookss.isEmpty()) {
+            userContext.fetchBooks()
+        }
+    }
     val books=userContext.getMyBooks()
     Scaffold(
+        //TODO somehow remove this button im sorry im at the end of my wits here
         floatingActionButton = {
             FloatingActionButton(
                 containerColor = MaterialTheme.colorScheme.primary,
                 onClick = {
+                    if(userContext.loggedIn)
                     onNavigate(AppScreen.CreateBook)
                 }
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add book")
             }
         }
+
     ) { innerPadding ->
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(innerPadding)) {

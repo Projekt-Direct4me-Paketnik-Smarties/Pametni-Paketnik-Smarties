@@ -196,6 +196,7 @@ fun BookDetailScreen(
         if(userContext.activeBook!!.status=="owned" && userContext.activeBook!!.owner==userContext.userId){
             Button(onClick = {userContext.removeBook()}
             ) {
+                //TODO: make a popup that will warn the user and ask again if they're sure
                 Text("Remove book from Database")
             }
         }
