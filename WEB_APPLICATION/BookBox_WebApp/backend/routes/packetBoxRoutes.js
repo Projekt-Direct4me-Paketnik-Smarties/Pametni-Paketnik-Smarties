@@ -2,12 +2,12 @@ var express = require('express');
 var router = express.Router();
 var packetBoxController = require('../controllers/packetBoxController.js');
 function requiresAuth(req, res, next){
-    if(req.session && req.session.userId){ //here put it that it equals to admin or smth, so only admin can make books
+    if(req.session && req.session.userId && req.session.isAdmin === true){ 
         console.log("user authorized")
         return next();
     } else{
-        var err = new Error("You must be logged in to view this page");
-        err.status = 401;
+        var err = new Error("Admin privileges required.");
+        err.status = 403;
         console.log("user NOT authorized")
         return next(err);
     }

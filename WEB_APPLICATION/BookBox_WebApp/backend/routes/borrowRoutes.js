@@ -13,19 +13,19 @@ function requiresLogin(req, res, next){
     }
 }
 function requiresAuth(req, res, next){
-    if(req.session && req.session.userId){ //here put it that it equals to admin or smth, so only admin can make books
-        console.log("user authorized")
+    if(req.session && req.session.userId && req.session.isAdmin === true){ 
+        console.log("admin authorized")
         return next();
     } else{
-        var err = new Error("You must be logged in to view this page");
-        err.status = 401;
-        console.log("user NOT authorized")
+        var err = new Error("Admin privileges required.");
+        err.status = 403;
+        console.log("admin NOT authorized")
         return next(err);
     }
 }
 
-router.get('/',requiresLogin, borrowController.listPerUser); //to get your own
-router.get('/all',requiresAuth, borrowController.list); //to get all
+router.get('/', requiresLogin, borrowController.listMine); //to get your own
+router.get('/all', requiresAuth, borrowController.listAll); //to get all
 router.get('/:id',requiresLogin, borrowController.show);
 
 router.post('/',requiresLogin, borrowController.create);

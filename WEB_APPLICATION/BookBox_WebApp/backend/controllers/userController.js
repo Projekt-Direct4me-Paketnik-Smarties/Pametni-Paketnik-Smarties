@@ -115,6 +115,7 @@ module.exports = {
                 return res.status(500).json({ message:"Error logging in" });
             }
             req.session.userId = user._id;
+            req.session.isAdmin = user.isAdmin;
             //res.redirect('/users/profile');
             return res.json(user);
         });

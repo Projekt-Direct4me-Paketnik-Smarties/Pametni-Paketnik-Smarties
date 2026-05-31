@@ -19,19 +19,17 @@ function Welcome() {
                 </p>
 
                 <div style={styles.actions}>
-                    <Link to="/books" style={styles.primaryLink}>
+                    <Link to="/browse" style={styles.primaryLink}>
                         Browse books
                     </Link>
+                </div>
+            </div>
 
-                    {user ? (
-                        <Link to="/profile" style={styles.secondaryLink}>
-                            View profile
-                        </Link>
-                    ) : (
-                        <Link to="/login" style={styles.secondaryLink}>
-                            Login
-                        </Link>
-                    )}
+            <div style={styles.mapPlaceholder}>
+                <p style={styles.kickerSmall}>Interactive Map</p>
+                <h2 style={styles.featureTitle}>Find Nearby Boxes</h2>
+                <div style={styles.mapCanvas}>
+                    <p style={styles.mapText}>TODO: Map goes here.</p>
                 </div>
             </div>
 
@@ -148,6 +146,29 @@ const styles = {
         display: 'grid',
         gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
         gap: '26px',
+    },
+
+    mapPlaceholder: {
+        padding: '40px',
+        backgroundColor: '#faf9f6',
+        border: '1px solid #e6e1d8',
+        marginBottom: '38px',
+    },
+
+    mapCanvas: {
+        marginTop: '20px',
+        height: '300px',
+        backgroundColor: '#efede8',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '1px dashed #cfc7ba',
+    },
+
+    mapText: {
+        color: '#8a867d',
+        fontSize: '14px',
+        fontStyle: 'italic',
     },
 
     featureCard: {

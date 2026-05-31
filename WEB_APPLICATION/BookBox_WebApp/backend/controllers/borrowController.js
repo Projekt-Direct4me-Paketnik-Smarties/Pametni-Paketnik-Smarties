@@ -4,7 +4,7 @@ const BookModel = require('../models/bookModel.js');
 const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
 
 module.exports = {
-    listPerUser: async function(req, res) {
+    listAll: async function(req, res) {
         try {
             const borrows = await BorrowModel.find()
                 .populate('user')
@@ -15,7 +15,7 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
-    list: async function(req, res) {
+    listMine: async function(req, res) {
         try {
             const borrows = await BorrowModel.find({ user: req.session.userId })
                 .populate('books');
@@ -68,7 +68,7 @@ module.exports = {
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'borrowed', box: null } }
+                { $set: { status: 'borrowed', box: null, currentBorrower: userId } }
             );
 
             // remove books from box
@@ -166,12 +166,22 @@ module.exports = {
                     books: available.map(b => b.title)
                 });
             }
+
+            // Ownership check: Verify that the user returning the books is the one who borrowed them
+            const unauthorized = books.filter(b => b.currentBorrower && b.currentBorrower.toString() !== userId);
+            if (unauthorized.length > 0) {
+                return res.status(403).json({
+                    message: 'You are not authorized to return books borrowed by another user.',
+                    books: unauthorized.map(b => b.title)
+                });
+            }
+
             // HERE GOES CHECK AND OPENNIGN OF THE SESEMEA, checking weight and all that
 
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                { $set: { status: 'available', box: boxId } }
+                { $set: { status: 'available', box: boxId, currentBorrower: null } }
             );
 
             // remove books from box
