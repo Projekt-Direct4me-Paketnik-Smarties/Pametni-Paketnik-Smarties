@@ -1,9 +1,42 @@
-import { useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { UserContext } from '../userContext.js';
+import BoxMap from './BoxMap.js';
 
 function Welcome() {
     const { user } = useContext(UserContext);
+    const [boxes, setBoxes] = useState([]);
+    const [mapStatus, setMapStatus] = useState('Loading nearby boxes...');
+
+    useEffect(() => {
+        let ignore = false;
+
+        async function loadBoxes() {
+            try {
+                const res = await fetch('http://localhost:5000/box');
+                const data = await res.json();
+
+                if (ignore) return;
+
+                if (res.ok) {
+                    setBoxes(data);
+                    setMapStatus(data.length ? 'Click a marker to inspect a box.' : 'No boxes have been placed yet.');
+                } else {
+                    setMapStatus(data.message || 'Unable to load boxes.');
+                }
+            } catch {
+                if (!ignore) {
+                    setMapStatus('Unable to load boxes.');
+                }
+            }
+        }
+
+        loadBoxes();
+
+        return () => {
+            ignore = true;
+        };
+    }, []);
 
     return (
         <section style={styles.wrapper}>
@@ -29,8 +62,9 @@ function Welcome() {
                 <p style={styles.kickerSmall}>Interactive Map</p>
                 <h2 style={styles.featureTitle}>Find Nearby Boxes</h2>
                 <div style={styles.mapCanvas}>
-                    <p style={styles.mapText}>TODO: Map goes here.</p>
+                    <BoxMap boxes={boxes} height={300} zoom={12} />
                 </div>
+                <p style={styles.mapText}>{mapStatus}</p>
             </div>
 
             <div style={styles.grid}>
