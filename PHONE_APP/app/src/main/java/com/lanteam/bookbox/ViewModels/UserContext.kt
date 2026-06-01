@@ -38,6 +38,7 @@ enum class BoxAction { BORROW, RETURN, DONATE, REPOSSESS }
 
 private val BASE_URL = "http://10.18.190.87:5000"
 //private val BASE_URL = "http://192.168.1.18:5000"
+//private val BASE_URL = "http://192.168.1.88:5000"
 //private val BASE_URL = "http://192.168.0.14:5000"
 
 

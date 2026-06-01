@@ -76,6 +76,7 @@ fun BookBoxApp() {
     var previousScreen by remember { mutableStateOf(AppScreen.List) }
     val context = LocalContext.current
     val userContext = remember {UserContext(application = context.applicationContext as Application) }
+    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     //this is for errors
@@ -136,7 +137,16 @@ fun BookBoxApp() {
             if (showBottomBar) {
                 FloatingActionButton(
                     onClick = {
-                        currentScreen = AppScreen.QrScanner
+                        if (userContext.userId == null) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "You must login first!",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        } else {
+                            currentScreen = AppScreen.QrScanner
+                        }
                     },
                     shape = CircleShape,
                     modifier = Modifier
