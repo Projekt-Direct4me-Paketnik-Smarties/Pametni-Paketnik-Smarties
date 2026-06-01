@@ -136,8 +136,17 @@ fun BookBoxApp() {
             if (showBottomBar) {
                 FloatingActionButton(
                     onClick = {
-                        unlockMessage = null
-                        currentScreen = AppScreen.QrScanner
+                        if (userContext.userId == null) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "You must login first!",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        } else {
+                            unlockMessage = null
+                            currentScreen = AppScreen.QrScanner
+                        }
                     },
                     shape = CircleShape,
                     modifier = Modifier
