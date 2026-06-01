@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const RefreshTokenModel = require('../models/refreshTokenModel.js');
+const fs = require('fs');
+const fetch = require('node-fetch');
+
 
 function sanitizeUser(user) {
     return { id: user._id, username: user.username, email: user.email };
@@ -198,4 +201,36 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
+    imageLogin: async function (req,res){
+    try {
+        const flaskRes = await fetch('http://localhost:5001/detect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image_path: req.file.path })
+        });
+
+        const { match } = await flaskRes.json();
+
+        fs.unlinkSync(req.file.path);
+
+        if (!match) {
+            return res.status(401).json({ message: 'Face not recognized' });
+        }
+
+        // find the admin user after face is confirmed
+        const user = await UserModel.findOne({ username: 'admin' });
+        if (!user) return res.status(404).json({ message: 'Admin user not found' });
+
+        const accessToken = signAccessToken(user);
+        const refreshToken = crypto.randomBytes(64).toString('hex');
+        const expiresAt = new Date(Date.now() + (parseInt(process.env.REFRESH_TTL_DAYS || '30') * 24 * 60 * 60 * 1000));
+        await RefreshTokenModel.create({ user: user._id, tokenHash: hashToken(refreshToken), expiresAt });
+
+        return res.status(200).json({ accessToken, refreshToken, user: sanitizeUser(user) });
+
+    } catch (err) {
+        if (req.file) fs.unlinkSync(req.file.path);  // cleanup on error
+        res.status(500).json({ message: err.message });
+    }
+}
 }

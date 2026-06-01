@@ -48,6 +48,7 @@ import com.lanteam.bookbox.ui.screen.MyBooksScreen
 import com.lanteam.bookbox.ui.screen.ProfileScreen
 import com.lanteam.bookbox.ui.screen.RegisterScreen
 import com.lanteam.bookbox.ui.view.ActionSelectionView
+import com.lanteam.bookbox.ui.view.LogInImageView
 import com.lanteam.bookbox.ui.view.QrScannerView
 import com.lanteam.bookbox.utils.extractBoxId
 import kotlinx.coroutines.launch
@@ -64,7 +65,8 @@ enum class AppScreen {
     Register,
     LogIn,
     CreateBook,
-    ActionSelection
+    ActionSelection,
+    LogInImage
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,10 +74,8 @@ enum class AppScreen {
 fun BookBoxApp() {
     var currentScreen by remember { mutableStateOf(AppScreen.Map) }
     var previousScreen by remember { mutableStateOf(AppScreen.List) }
-    var unlockMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val userContext = remember {UserContext(application = context.applicationContext as Application) }
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     //this is for errors
@@ -97,7 +97,7 @@ fun BookBoxApp() {
 
     BackHandler(enabled = currentScreen != AppScreen.Map) {
         currentScreen = when (currentScreen) {
-            AppScreen.EditProfile, AppScreen.BorrowHistory, AppScreen.LogIn, AppScreen.Register -> AppScreen.Profile
+            AppScreen.EditProfile, AppScreen.BorrowHistory, AppScreen.LogIn, AppScreen.Register, AppScreen.LogInImage -> AppScreen.Profile
             AppScreen.QrScanner , AppScreen.ActionSelection-> AppScreen.Map
             AppScreen.BookDetail -> AppScreen.List
             AppScreen.CreateBook -> AppScreen.MyBooks
@@ -136,7 +136,6 @@ fun BookBoxApp() {
             if (showBottomBar) {
                 FloatingActionButton(
                     onClick = {
-                        unlockMessage = null
                         currentScreen = AppScreen.QrScanner
                     },
                     shape = CircleShape,
@@ -208,6 +207,10 @@ fun BookBoxApp() {
                 .padding(innerPadding)
         ) {
             when (currentScreen) {
+                AppScreen.LogInImage ->LogInImageView(userContext,
+                    onBackClick = { currentScreen = AppScreen.Profile }
+
+                    )
                 AppScreen.CreateBook -> CreateBookScreen(userContext)
                 AppScreen.ActionSelection-> ActionSelectionView(
                     userContext

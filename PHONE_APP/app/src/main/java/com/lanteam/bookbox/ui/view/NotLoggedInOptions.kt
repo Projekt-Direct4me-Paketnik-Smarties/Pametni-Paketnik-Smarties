@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +46,17 @@ fun NotLoggedInOptions(onNavigate: (AppScreen) -> Unit = {}){
         Text("Please log in or register", modifier = Modifier.padding(bottom = 24.dp))
         Button(onClick = { onNavigate(AppScreen.LogIn)}) {
             Text("Login")
+        }
+        Button(onClick = { onNavigate(AppScreen.LogInImage)}) {
+            Text("Login")
+            Icon(
+                Icons.Filled.Image,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth(0.3f)
+                    .aspectRatio(1f),
+                tint = MaterialTheme.colorScheme.background
+            )
         }
         Button(onClick = { onNavigate(AppScreen.Register)}) {
             Text("Register")

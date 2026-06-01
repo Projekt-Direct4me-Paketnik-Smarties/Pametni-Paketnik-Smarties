@@ -36,7 +36,8 @@ enum class BoxAction { BORROW, RETURN, DONATE, REPOSSESS }
 
 // Add to UserContext
 
-private val BASE_URL = "http://192.168.1.18:5000"
+private val BASE_URL = "http://10.18.190.87:5000"
+//private val BASE_URL = "http://192.168.1.18:5000"
 //private val BASE_URL = "http://192.168.0.14:5000"
 
 
@@ -675,6 +676,38 @@ class UserContext(application: Application) : AndroidViewModel(application) {
             } catch (e: Exception) {
                 Log.e("API", "Exception: ${e.message}")
                 _errorEvent.tryEmit("Failed to fetch borrow history")
+            }
+        }
+    }
+    fun scanImageLogin(imageBytes: ByteArray, onResult: (Boolean) -> Unit) {
+        scope.launch {
+            try {
+                Log.i("API", "Image Login sent")
+                val response = uploadImage(
+                    path = "/users/image-login",
+                    imageBytes = imageBytes
+                )
+                if (response.code in 200..299) {
+                    val json = JSONObject(response.body)
+                    val accessToken = json.getString("accessToken")
+                    val refreshToken = json.getString("refreshToken")
+                    val userJson = json.getJSONObject("user")
+                    saveUserData(
+                        accessToken = accessToken,
+                        refreshToken = refreshToken,
+                        id = userJson.getString("id")
+                    )
+                    userId=userJson.getString("id")
+                    loggedIn = true
+                    getUserProfile({})
+                    _navEvent.tryEmit(AppScreen.Map)
+                    onResult(true)
+                } else {
+                    Log.i("API", "Image Login unsucsessfull")
+                    onResult(false) // no match, keep scanning
+                }
+            } catch (e: Exception) {
+                onResult(false)
             }
         }
     }
