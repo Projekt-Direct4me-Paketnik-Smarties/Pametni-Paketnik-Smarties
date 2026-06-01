@@ -305,7 +305,7 @@ Pred zagonom morajo biti na računalniku nameščeni:
 Odprite terminal in izvedite:
 
 ```bash
-git clone [TUKAJ VSTAVITE POVEZAVO DO REPOZITORIJA]
+git clone [https://github.com/Projekt-Direct4me-Paketnik-Smarties/Pametni-Paketnik-Smarties]
 cd PROJECT_PAMETNI_PAKETNIK
 ```
 
