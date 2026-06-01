@@ -11,6 +11,7 @@ import Welcome from './components/Welcome.js';
 import Borrow from './components/Borrow.js';
 import BrowseBooks from './components/BrowseBooks.js';
 import './App.css';
+import UserDashboard from './components/UserDashboard.js';
 
 function App() {
     const [user, setUser] = useState(localStorage.user ? JSON.parse(localStorage.user) : null);
@@ -35,7 +36,8 @@ function App() {
                             <Route path="/box" element={<Box />} />
                             <Route path="/books" element={<Book />} />
                             <Route path="/browse" element={<BrowseBooks />} />
-                            <Route path="borrow" element={<Borrow />}/>
+                            <Route path="/borrow" element={<Borrow />}/>¸
+                            <Route path="/dashboard" element={<UserDashboard />} />
                         </Routes>
                     </main>
                 </div>

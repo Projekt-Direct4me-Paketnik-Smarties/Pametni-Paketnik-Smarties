@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const BASE = 'http://localhost:5000/books';
 const IMAGE_BASE = 'http://localhost:5000';
@@ -13,6 +13,10 @@ function Books() {
     const [status, setStatus] = useState('');
     const [books, setBooks] = useState([]);
     const [selectedBook, setSelectedBook] = useState(null);
+
+    useEffect(() => {
+        handleList();
+    }, []);
 
     function buildFormData() {
         const fd = new FormData();
@@ -116,7 +120,7 @@ function Books() {
         if (res.ok) {
             setStatus('Book deleted successfully.');
             clearForm();
-            setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
+            await handleList();
         } else {
             let data = null;
 
@@ -139,7 +143,6 @@ function Books() {
 
         if (res.ok) {
             setBooks(data);
-            setStatus('Books loaded.');
             console.log('list:', data);
         } else {
             setStatus(data.message || 'List failed.');
