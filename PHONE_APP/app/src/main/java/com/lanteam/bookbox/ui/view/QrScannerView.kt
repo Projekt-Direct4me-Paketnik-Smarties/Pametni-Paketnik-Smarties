@@ -1,4 +1,4 @@
-package com.lanteam.bookbox.ui.screen
+package com.lanteam.bookbox.ui.view
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -24,15 +24,21 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.lanteam.bookbox.ViewModels.UserContext
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
-fun QrScannerScreen(
+fun QrScannerView(
     onQrScanned: (String) -> Unit,
+    userContext: UserContext,
     onBackClick: () -> Unit
 ) {
+    if(!userContext.loggedIn){
+        //TODO: make a toast to tell the user must be logged in
+        onBackClick()
+    }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scannerExecutor = remember { Executors.newSingleThreadExecutor() }

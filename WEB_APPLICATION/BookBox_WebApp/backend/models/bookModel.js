@@ -12,16 +12,25 @@ var bookSchema = new Schema({
 	'genre' : String,
 	'status': {
         type: String,
-        enum: ['available', 'borrowed'],
-        default: 'available',
+        enum: ['available', 'borrowed', 'owned'],
+        default: 'owned',
     },
 	'weight':{
 		type: Number,
 		default: 5
 	},
 		'packetBox' : {
+	 	type: String,
+		default: null
+	},
+	'owner' : {
 	 	type: Schema.Types.ObjectId,
-	 	ref: 'packetBox'
+	 	ref: 'user'
+	},
+	'currentBorrower': {
+		type: Schema.Types.ObjectId,
+		ref: 'user',
+		default: null
 	},
 }, { timestamps: true });
 

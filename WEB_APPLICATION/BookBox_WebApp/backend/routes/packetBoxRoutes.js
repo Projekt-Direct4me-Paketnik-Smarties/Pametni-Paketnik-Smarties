@@ -1,26 +1,16 @@
 var express = require('express');
 var router = express.Router();
 var packetBoxController = require('../controllers/packetBoxController.js');
-function requiresAuth(req, res, next){
-    if(req.session && req.session.userId){ //here put it that it equals to admin or smth, so only admin can make books
-        console.log("user authorized")
-        return next();
-    } else{
-        var err = new Error("You must be logged in to view this page");
-        err.status = 401;
-        console.log("user NOT authorized")
-        return next(err);
-    }
-}
+var tokenAuth = require('../middleware/tokenAuth');
+var adminAuth = require('../middleware/adminAuth.js')
 
 router.get('/', packetBoxController.list);
 router.get('/:id', packetBoxController.show);
 
-router.post('/',requiresAuth, packetBoxController.create);
+router.post('/', tokenAuth,adminAuth, packetBoxController.create);
 
-router.put('/books/:id',requiresAuth, packetBoxController.addNewBooks);
-router.put('/:id',requiresAuth, packetBoxController.update);
+router.put('/:id', tokenAuth,adminAuth, packetBoxController.update);
 
-router.delete('/:id',requiresAuth, packetBoxController.remove);
+router.delete('/:id', tokenAuth,adminAuth, packetBoxController.remove);
 
 module.exports = router;

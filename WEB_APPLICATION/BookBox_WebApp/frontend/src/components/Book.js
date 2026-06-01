@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { apiFetch, uploadImage } from '../apiFetch.js';
 
-const BASE = 'http://localhost:5000/books';
 const IMAGE_BASE = 'http://localhost:5000';
 
 function Books() {
     const [title, setTitle] = useState('');
+    const [userId, setUserId] = useState('');
     const [glossary, setGlossary] = useState('');
     const [genre, setGenre] = useState('');
     const [author, setAuthor] = useState('');
@@ -49,18 +50,19 @@ function Books() {
 
     async function handleCreate(e) {
         e.preventDefault();
-
-        const res = await fetch(`${BASE}/`, {
+        console.log("HERE")
+        try{
+        const res = await uploadImage(`/books/`, {
             method: 'POST',
-            credentials: 'include',
             body: buildFormData(),
         });
-
         let data = null;
 
         try {
             data = await res.json();
+            console.log("pasing data")
         } catch {
+            console.log("error parsing data")
             data = null;
         }
 
@@ -69,7 +71,12 @@ function Books() {
             console.log('created:', data);
             await handleList();
         } else {
+            console.log("result not ok")
             setStatus(data?.message || 'Create failed.');
+        }
+        
+        } catch(error){
+            console.log(error.message)
         }
     }
 
@@ -80,9 +87,8 @@ function Books() {
             return setStatus('Book ID is required for update.');
         }
 
-        const res = await fetch(`${BASE}/${bookId}`, {
+        const res = await uploadImage(`/books/${bookId}`, {
             method: 'PUT',
-            credentials: 'include',
             body: buildFormData(),
         });
 
@@ -108,9 +114,8 @@ function Books() {
             return setStatus('Book ID is required for delete.');
         }
 
-        const res = await fetch(`${BASE}/${bookId}`, {
+        const res = await apiFetch(`/books/${bookId}`, {
             method: 'DELETE',
-            credentials: 'include',
         });
 
         if (res.ok) {
@@ -131,12 +136,13 @@ function Books() {
     }
 
     async function handleList() {
-        const res = await fetch(`${BASE}/`, {
-            credentials: 'include',
-        });
+        console.log("running handleList")
+        const res = await apiFetch(`/books/`);
+        console.log("got result")
 
         const data = await res.json();
-
+        
+        console.log("parsed data")
         if (res.ok) {
             setBooks(data);
             setStatus('Books loaded.');
@@ -151,9 +157,7 @@ function Books() {
             return setStatus('Book ID is required for show.');
         }
 
-        const res = await fetch(`${BASE}/${bookId}`, {
-            credentials: 'include',
-        });
+        const res = await apiFetch(`/books/${bookId}`);
 
         const data = await res.json();
 
@@ -180,6 +184,20 @@ function Books() {
         }
 
         return styles.bookStatus;
+    }
+    
+    async function handleMyBooks() {
+        const res = await apiFetch(`/books/myBook/`);
+
+        const data = await res.json();
+
+        if (res.ok) {
+            setBooks(data);
+            setStatus('Books loaded.');
+            console.log('list:', data);
+        } else {
+            setStatus(data.message || 'List failed.');
+        }
     }
 
     return (
@@ -358,6 +376,10 @@ function Books() {
                     ))}
                 </div>
             )}
+            <input style={styles.input} type="text" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="borrow id" />
+            <div style={styles.actions}>
+                <button style={styles.button} onClick={handleMyBooks}>myBooks</button>
+            </div>
         </section>
     );
 }

@@ -6,15 +6,12 @@ var borrowSchema = new Schema({
 	 	type: Schema.Types.ObjectId,
 	 	ref: 'user'
 	},
-	'packetBox' : {
-	 	type: Schema.Types.ObjectId,
-	 	ref: 'packetBox'
-	},
+	'packetBox' : String,
 	'date' : Date,
 	'books' : [{ type: Schema.Types.ObjectId, ref: 'book' }],
 	'action': {
         type: String,
-        enum: ['borrow', 'return'],
+        enum: ['borrow', 'return', 'reposes', 'donate'],
         default: 'borrow',
     },
 });

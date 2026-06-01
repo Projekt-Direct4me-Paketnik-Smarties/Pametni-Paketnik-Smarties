@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { UserContext } from '../userContext.js';
+import { apiFetch } from '../apiFetch.js';
 
 function UserPanel() {
     const { user, setUserContext } = useContext(UserContext);
@@ -7,20 +8,14 @@ function UserPanel() {
 
     async function handleLogout() {
         try {
-            const res = await fetch('http://localhost:5000/users/logout', {
-                method: 'GET',
-                credentials: 'include',
+            await apiFetch('/users/logout', {
+                method: 'POST',
+                body: JSON.stringify({ refreshToken: localStorage.getItem('refreshToken') }),
             });
-
-            if (res.ok) {
-                localStorage.removeItem('user');
-                setUserContext(null);
-                setStatus('Uspešno si se odjavil.');
-            } else {
-                setStatus('Odjava ni uspela.');
-            }
+            setUserContext(null);
+            setStatus('Uspešno si se odjavil.');
         } catch (err) {
-            setStatus('Napaka pri povezavi s strežnikom.');
+            setStatus(err.message);
         }
     }
 

@@ -1,23 +1,19 @@
 import { useState } from 'react';
-
-const BASE = 'http://localhost:5000/box';
+import { apiFetch } from '../apiFetch.js';
 
 function PacketBox() {
     const [name, setName] = useState('');
     const [longitude, setLongitude] = useState('');
     const [latitude, setLatitude] = useState('');
     const [boxId, setBoxId] = useState('');
-    const [bookIds, setBookIds] = useState('');
     const [status, setStatus] = useState('');
     const [boxes, setBoxes] = useState([]);
 
     async function handleCreate(e) {
         e.preventDefault();
 
-        const res = await fetch(`${BASE}/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+        const res = await apiFetch(`/box/`, {
+            method:'POST',
             body: JSON.stringify({ name, longitude, latitude }),
         });
 
@@ -36,10 +32,8 @@ function PacketBox() {
 
         if (!boxId) return setStatus('Box ID is required for update.');
 
-        const res = await fetch(`${BASE}/${boxId}`, {
+        const res = await apiFetch(`/box/${boxId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ name, longitude, latitude }),
         });
 
@@ -56,9 +50,8 @@ function PacketBox() {
     async function handleDelete() {
         if (!boxId) return setStatus('Box ID is required for delete.');
 
-        const res = await fetch(`${BASE}/${boxId}`, {
+        const res = await apiFetch(`/box/${boxId}`, {
             method: 'DELETE',
-            credentials: 'include',
         });
 
         if (res.ok) {
@@ -74,7 +67,7 @@ function PacketBox() {
     }
 
     async function handleList() {
-        const res = await fetch(`${BASE}/`, { credentials: 'include' });
+        const res = await apiFetch(`/box/`);
         const data = await res.json();
 
         if (res.ok) {
@@ -94,7 +87,7 @@ function PacketBox() {
     async function handleShow() {
         if (!boxId) return setStatus('Box ID is required for show.');
 
-        const res = await fetch(`${BASE}/${boxId}`, { credentials: 'include' });
+        const res = await apiFetch(`/box/${boxId}`);
         const data = await res.json();
 
         if (res.ok) {
@@ -105,32 +98,6 @@ function PacketBox() {
             console.log('show:', data);
         } else {
             setStatus(data.message || 'Show failed.');
-        }
-    }
-
-    async function handleAddBooks() {
-        if (!boxId) return setStatus('Box ID is required for adding books.');
-        if (!bookIds) return setStatus('Enter at least one book ID.');
-
-        const parsed = bookIds
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
-
-        const res = await fetch(`${BASE}/books/${boxId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ books: parsed }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            setStatus('Books added to packet box.');
-            console.log('addBooks result:', data);
-        } else {
-            setStatus(data.message || 'Add books failed.');
         }
     }
 
@@ -218,25 +185,6 @@ function PacketBox() {
                         <button style={styles.dangerButton} onClick={handleDelete}>
                             Delete
                         </button>
-                    </div>
-                </div>
-
-                <div style={styles.card}>
-                    <p style={styles.kickerSmall}>Books</p>
-                    <h2 style={styles.cardTitle}>Assign books</h2>
-
-                    <div style={styles.field}>
-                        <label style={styles.label}>Book IDs</label>
-                        <input
-                            type="text"
-                            value={bookIds}
-                            onChange={(e) => setBookIds(e.target.value)}
-                            placeholder="id1, id2, id3"
-                        />
-                    </div>
-
-                    <div style={styles.actions}>
-                        <button onClick={handleAddBooks}>Add books</button>
                     </div>
                 </div>
             </div>
