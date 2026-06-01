@@ -118,7 +118,7 @@ fun BookDetailScreen(
                     )
                 }
 
-                if(userContext.activeBook!!.packetBoxId!=null){
+                if(!userContext.activeBook!!.packetBoxId.isNullOrBlank()){
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Filled.Polyline,
