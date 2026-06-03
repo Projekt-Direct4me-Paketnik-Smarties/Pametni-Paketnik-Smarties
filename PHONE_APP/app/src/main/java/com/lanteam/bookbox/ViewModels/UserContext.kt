@@ -2,12 +2,15 @@ package com.lanteam.bookbox.ViewModels
 
 import android.app.Application
 import android.content.Context
+import android.media.MediaPlayer
 import android.net.Uri
+import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
@@ -27,7 +30,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
+import java.io.File
 import kotlin.Exception
 import kotlin.collections.listOf
 
@@ -303,41 +311,41 @@ class UserContext(application: Application) : AndroidViewModel(application) {
     }
     private suspend fun playOpenBoxAudio(boxId: Int): Boolean {
         // TODO: uncomment when hardware available
-//    return withContext(Dispatchers.IO) {
-//        try {
-//            val client = OkHttpClient()
-//            val json = JSONObject().apply {
-//                put("boxId", boxId)
-//                put("qrCodeInfo", "String")
-//                put("tokenFormat", 5)
-//                put("addAccessLog", true)
-//            }
-//            val body = json.toString().toRequestBody("application/json".toMediaType())
-//            val request = Request.Builder()
-//                .url("https://api-d4me-stage.direct4.me/sandbox/v1/Access/openbox")
-//                .addHeader("Authorization", "Bearer 9ea96945-3a37-4638-a5d4-22e89fbc998f")
-//                .post(body)
-//                .build()
-//            val response = client.newCall(request).execute()
-//            if (!response.isSuccessful) return@withContext false
-//            val responseText = response.body?.string() ?: return@withContext false
-//            val audioBase64 = JSONObject(responseText).getString("data")
-//            val audioBytes = Base64.decode(audioBase64, Base64.DEFAULT)
-//            val audioFile = File(application.cacheDir, "openbox_audio.mp3")
-//            audioFile.writeBytes(audioBytes)
-//            withContext(Dispatchers.Main) {
-//                MediaPlayer().apply {
-//                    setDataSource(audioFile.absolutePath)
-//                    prepare()
-//                    start()
-//                    setOnCompletionListener { it.release() }
-//                }
-//            }
-//            true
-//        } catch (e: Exception) {
-//            false
-//        }
-//    }
+    return withContext(Dispatchers.IO) {
+        try {
+            val client = OkHttpClient()
+            val json = JSONObject().apply {
+                put("boxId", boxId)
+                put("qrCodeInfo", "String")
+                put("tokenFormat", 5)
+                put("addAccessLog", true)
+            }
+            val body = json.toString().toRequestBody("application/json".toMediaType())
+            val request = Request.Builder()
+                .url("https://api-d4me-stage.direct4.me/sandbox/v1/Access/openbox")
+                .addHeader("Authorization", "Bearer 9ea96945-3a37-4638-a5d4-22e89fbc998f")
+                .post(body)
+                .build()
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) return@withContext false
+            val responseText = response.body?.string() ?: return@withContext false
+            val audioBase64 = JSONObject(responseText).getString("data")
+            val audioBytes = Base64.decode(audioBase64, Base64.DEFAULT)
+            val audioFile = File(application.cacheDir, "openbox_audio.mp3")
+            audioFile.writeBytes(audioBytes)
+            withContext(Dispatchers.Main) {
+                MediaPlayer().apply {
+                    setDataSource(audioFile.absolutePath)
+                    prepare()
+                    start()
+                    setOnCompletionListener { it.release() }
+                }
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
         return true // stub — always succeeds for now
     }
 
