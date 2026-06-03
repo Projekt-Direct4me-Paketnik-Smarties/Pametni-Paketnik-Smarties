@@ -130,5 +130,24 @@ module.exports = {
             error: err.message
         });
     }
-}
+    },
+    listPerPacketBox: async function(req, res) {
+        try {
+            const packetBox = req.params.packetBox;
+
+            const borrows = await BorrowModel.find({
+                packetBox: packetBox
+            })
+            .sort({ date: -1 })
+            .populate('user')
+            .populate('books');
+
+            return res.json(borrows);
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({
+                message: err.message
+            });
+        }
+    },
 };

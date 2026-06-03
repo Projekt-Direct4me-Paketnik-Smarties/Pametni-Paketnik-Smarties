@@ -201,7 +201,7 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
-    imageLogin: async function (req,res){
+    image_2FA: async function (req,res){
     try {
         const flaskRes = await fetch('http://localhost:5001/detect', {
             method: 'POST',

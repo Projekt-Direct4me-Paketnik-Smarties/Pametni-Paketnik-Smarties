@@ -47,17 +47,6 @@ fun NotLoggedInOptions(onNavigate: (AppScreen) -> Unit = {}){
         Button(onClick = { onNavigate(AppScreen.LogIn)}) {
             Text("Login")
         }
-        Button(onClick = { onNavigate(AppScreen.LogInImage)}) {
-            Text("Login")
-            Icon(
-                Icons.Filled.Image,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth(0.3f)
-                    .aspectRatio(1f),
-                tint = MaterialTheme.colorScheme.background
-            )
-        }
         Button(onClick = { onNavigate(AppScreen.Register)}) {
             Text("Register")
         }

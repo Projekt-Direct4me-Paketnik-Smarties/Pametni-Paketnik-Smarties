@@ -7,24 +7,28 @@ module.exports = {
     list: async function(req, res) {
         try {
             const borrows = await BorrowModel.find()
+                .sort({ date: -1 })
                 .populate('user')
                 .populate('books');
+
             return res.json(borrows);
         } catch (err) {
             console.error(err);
             res.status(500).json({ message: err.message });
         }
     },
+
     listPerUser: async function(req, res) {
         try {
-            const borrows = await BorrowModel.find({ user: req.user.id })  // ←
+            const borrows = await BorrowModel.find({ user: req.user.id })
+                .sort({ date: -1 })
                 .populate('books');
+
             return res.json(borrows);
         } catch (err) {
             res.status(500).json({ message: err.message });
         }
     },
-
     show: function (req, res) {
         var id = req.params.id;
 

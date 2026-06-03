@@ -118,6 +118,8 @@ fun LogInImageView(userContext: UserContext,
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Log in with 2FA")
+        Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onBackClick) {
             Icon(Icons.Filled.ArrowBack, contentDescription = null)
             Text("Back")

@@ -11,7 +11,7 @@ router.post('/', userController.create)
 router.post('/login', userController.login);
 router.post('/logout', userController.logout);
 router.post('/refresh', userController.refresh);
-router.post('/image-login', upload.single('image'), userController.imageLogin);
+router.post('/image-login', upload.single('image'), userController.image_2FA);
 
 router.put('/:id', tokenAuth, userController.update);
 

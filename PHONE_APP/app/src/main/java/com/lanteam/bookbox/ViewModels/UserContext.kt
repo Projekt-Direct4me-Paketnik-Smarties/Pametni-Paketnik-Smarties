@@ -36,8 +36,8 @@ enum class BoxAction { BORROW, RETURN, DONATE, REPOSSESS }
 
 // Add to UserContext
 
-private val BASE_URL = "http://10.18.190.87:5000"
-//private val BASE_URL = "http://192.168.1.18:5000"
+//private val BASE_URL = "http://10.18.190.87:5000"
+private val BASE_URL = "http://192.168.1.18:5000"
 //private val BASE_URL = "http://192.168.1.88:5000"
 //private val BASE_URL = "http://192.168.0.14:5000"
 
@@ -362,6 +362,10 @@ class UserContext(application: Application) : AndroidViewModel(application) {
                     try {
                         val json = JSONObject(response.body)
                         val userJson = json.getJSONObject("user")
+                        if(userJson.getString("username")=="admin"){
+                            _navEvent.tryEmit(AppScreen.LogInImage)
+                            return@launch
+                        }
                         saveUserData(
                             json.getString("accessToken"),
                             json.getString("refreshToken"),
