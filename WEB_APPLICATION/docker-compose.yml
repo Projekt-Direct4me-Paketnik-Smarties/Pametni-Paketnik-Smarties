@@ -1,0 +1,8 @@
+services:
+  backend:
+    build: ./BookBox_WebApp/backend
+    container_name: bookbox-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./BookBox_WebApp/backend/.env
