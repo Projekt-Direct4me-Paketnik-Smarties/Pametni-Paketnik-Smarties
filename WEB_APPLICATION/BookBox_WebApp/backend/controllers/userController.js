@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const RefreshTokenModel = require('../models/refreshTokenModel.js');
 const fs = require('fs');
 const fetch = require('node-fetch');
+const FLASK_URL = process.env.FLASK_URL || 'http://localhost:5001';
 
 
 function sanitizeUser(user) {
@@ -203,11 +204,14 @@ module.exports = {
     },
     image_2FA: async function (req,res){
     try {
-        const flaskRes = await fetch('http://localhost:5001/detect', {
+        console.log("flask url: ", FLASK_URL)
+        console.log("sending fetch")
+        const flaskRes = await fetch(`${FLASK_URL}/detect`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ image_path: req.file.path })
         });
+        console.log("recieving response")
 
         const { match } = await flaskRes.json();
 
@@ -229,6 +233,7 @@ module.exports = {
         return res.status(200).json({ accessToken, refreshToken, user: sanitizeUser(user) });
 
     } catch (err) {
+        console.log("ERROR: ", err)
         if (req.file) fs.unlinkSync(req.file.path);  // cleanup on error
         res.status(500).json({ message: err.message });
     }
