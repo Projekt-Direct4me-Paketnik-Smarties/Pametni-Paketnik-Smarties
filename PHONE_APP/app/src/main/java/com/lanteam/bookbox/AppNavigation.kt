@@ -4,6 +4,7 @@ import android.app.Application
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -20,6 +21,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -114,24 +116,30 @@ fun BookBoxApp() {
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Book",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Box",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.inversePrimary
-                        )
+            Column {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Book",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Box",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.inversePrimary
+                            )
+                        }
                     }
-                }
-            )
+                )
+                HorizontalDivider(
+                    thickness = 3.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+            }
         },
         floatingActionButton = {
             if (showBottomBar) {
@@ -166,47 +174,53 @@ fun BookBoxApp() {
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = currentScreen == AppScreen.Map,
-                        onClick = { currentScreen = AppScreen.Map },
-                        icon = {
-                            Icon(Icons.Filled.Map, contentDescription = null)
-                        },
-                        label = { Text(stringResource(R.string.navMap)) }
+                Column {
+                    HorizontalDivider(
+                        thickness = 3.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
                     )
-                    NavigationBarItem(
-                        selected = currentScreen == AppScreen.List,
-                        onClick = { currentScreen = AppScreen.List },
-                        icon = {
-                            Icon(Icons.Filled.List, contentDescription = null)
-                        },
-                        label = { Text(stringResource(R.string.navList)) }
-                    )
-                    // Prazen prostor za FAB
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = {},
-                        enabled = false,
-                        icon = {},
-                        label = {}
-                    )
-                    NavigationBarItem(
-                        selected = currentScreen == AppScreen.MyBooks,
-                        onClick = { currentScreen = AppScreen.MyBooks },
-                        icon = {
-                            Icon(Icons.Filled.Book, contentDescription = null)
-                        },
-                        label = { Text(stringResource(R.string.navMyBooks)) }
-                    )
-                    NavigationBarItem(
-                        selected = currentScreen == AppScreen.Profile,
-                        onClick = { currentScreen = AppScreen.Profile },
-                        icon = {
-                            Icon(Icons.Filled.AccountCircle, contentDescription = null)
-                        },
-                        label = { Text(stringResource(R.string.navProfile)) }
-                    )
+                    NavigationBar {
+                        NavigationBarItem(
+                            selected = currentScreen == AppScreen.Map,
+                            onClick = { currentScreen = AppScreen.Map },
+                            icon = {
+                                Icon(Icons.Filled.Map, contentDescription = null)
+                            },
+                            label = { Text(stringResource(R.string.navMap)) }
+                        )
+                        NavigationBarItem(
+                            selected = currentScreen == AppScreen.List,
+                            onClick = { currentScreen = AppScreen.List },
+                            icon = {
+                                Icon(Icons.Filled.List, contentDescription = null)
+                            },
+                            label = { Text(stringResource(R.string.navList)) }
+                        )
+                        // Prazen prostor za FAB
+                        NavigationBarItem(
+                            selected = false,
+                            onClick = {},
+                            enabled = false,
+                            icon = {},
+                            label = {}
+                        )
+                        NavigationBarItem(
+                            selected = currentScreen == AppScreen.MyBooks,
+                            onClick = { currentScreen = AppScreen.MyBooks },
+                            icon = {
+                                Icon(Icons.Filled.Book, contentDescription = null)
+                            },
+                            label = { Text(stringResource(R.string.navMyBooks)) }
+                        )
+                        NavigationBarItem(
+                            selected = currentScreen == AppScreen.Profile,
+                            onClick = { currentScreen = AppScreen.Profile },
+                            icon = {
+                                Icon(Icons.Filled.AccountCircle, contentDescription = null)
+                            },
+                            label = { Text(stringResource(R.string.navProfile)) }
+                        )
+                    }
                 }
             }
         }
