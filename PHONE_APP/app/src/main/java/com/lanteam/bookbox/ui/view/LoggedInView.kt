@@ -35,92 +35,174 @@ import com.lanteam.bookbox.AppScreen
 import com.lanteam.bookbox.R
 import com.lanteam.bookbox.ViewModels.UserContext
 import com.lanteam.bookbox.model.User
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
-fun LoggedInView(onNavigate: (AppScreen) -> Unit = {}, userContext: UserContext){
+fun LoggedInView(onNavigate: (AppScreen) -> Unit = {}, userContext: UserContext) {
 
     var status by remember { mutableStateOf("") }
     val userState = userContext.userState
     LaunchedEffect(Unit) {
-        if (userState.username.isBlank() || !userContext.activeBoxId.isNullOrBlank()) { //refetch if the user has "borroed" anything, to update the amoung of borrows
+        if (userState.username.isBlank() || !userContext.activeBoxId.isNullOrBlank()) {
             userContext.getUserProfile(onResult = { status = it })
         }
     }
+
     Column(
-    modifier = Modifier
-    .verticalScroll(rememberScrollState())
-    .fillMaxSize()
-    .padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF211A14),
+                        Color(0xFF3E2723)
+                    )
+                )
+            )
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp)
     ) {
+        // Profilna kartica
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 16.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.12f)
+            ),
+            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.18f)),
+            elevation = CardDefaults.cardElevation(0.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.bookbox_mascot), //marker je PLACEHOLDER za PFP
+                    painter = painterResource(id = R.drawable.bookbox_mascot),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(200.dp)
+                        .size(100.dp)
                         .clip(CircleShape)
                 )
                 Text(
                     text = userState.username,
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)
                 )
                 Text(
-                    text =  userState.email,
+                    text = userState.email,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    color = Color.White.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(text = "books borrowed: "+ userState.booksBorrowed.toString())
-                Text(text = "currently borrowed books: "+userState.currentlyBorrowed.toString())
-                if(status!=""){
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = status,
-                    modifier = Modifier.padding(top = 16.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (status.contains("Error") || status.contains("Exception")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                )
+
+                HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = userState.booksBorrowed.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Total borrowed",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.5f)
+                        )
+                    }
+                    VerticalDivider(
+                        color = Color.White.copy(alpha = 0.15f),
+                        modifier = Modifier.height(48.dp)
+                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = userState.currentlyBorrowed.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Currently borrowed",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+
+                if (status.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val isError = status.contains("Error") || status.contains("Exception")
+                    Text(
+                        text = status,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isError) Color(0xFFEF9A9A) else Color(0xFFA5D6A7)
+                    )
                 }
             }
-
         }
 
-        Button(
+        // Gumbi
+        OutlinedButton(
             onClick = { onNavigate(AppScreen.BorrowHistory) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp)
+                .padding(bottom = 10.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color.White
+            ),
+            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.3f))
         ) {
             Icon(Icons.Filled.List, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-            Text("View Borrow History")
+            Text("View borrow history")
         }
 
-        Button(
+        OutlinedButton(
             onClick = { onNavigate(AppScreen.EditProfile) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp)
+                .padding(bottom = 10.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color.White
+            ),
+            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.3f))
         ) {
             Icon(Icons.Filled.Settings, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-            Text("Edit Profile")
+            Text("Edit profile")
         }
 
-        Button(
+        OutlinedButton(
             onClick = { userContext.logout() },
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error
-            )
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color(0xFFEF9A9A)
+            ),
+            border = BorderStroke(0.5.dp, Color(0xFFE53935).copy(alpha = 0.35f))
         ) {
             Text("Logout")
         }

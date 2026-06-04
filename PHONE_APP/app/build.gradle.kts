@@ -72,6 +72,8 @@ dependencies {
     implementation ("androidx.security:security-crypto:1.1.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.activity:activity-compose:1.9.0")
+    implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

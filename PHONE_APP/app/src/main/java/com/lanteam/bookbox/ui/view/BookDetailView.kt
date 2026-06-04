@@ -29,177 +29,177 @@ import coil.compose.AsyncImage
 import com.lanteam.bookbox.AppScreen
 import com.lanteam.bookbox.R
 import com.lanteam.bookbox.ViewModels.UserContext
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun BookDetailScreen(
     userContext: UserContext,
     onBackClick: () -> Unit
 ) {
+    val book = userContext.activeBook!!
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF211A14),
+                        Color(0xFF3E2723)
+                    )
+                )
+            )
             .padding(16.dp)
     ) {
         TextButton(onClick = onBackClick) {
             Icon(
                 Icons.Filled.ArrowBack,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(18.dp),
+                tint = Color.White.copy(alpha = 0.7f)
             )
-            Spacer(
-                modifier = Modifier.width(4.dp)
-            )
-            Text("Return to list")
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("Return to list", color = Color.White.copy(alpha = 0.7f))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(14.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+                containerColor = Color.White.copy(alpha = 0.12f)
+            ),
+            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.18f)),
+            elevation = CardDefaults.cardElevation(0.dp)
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.MenuBook,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .padding(end = 8.dp)
-                    )
-                    // book title
-                    Text(
-                        text = userContext.activeBook!!.title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // book author
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(end = 4.dp)
-                    )
-                    Text(
-                        text = userContext.activeBook!!.author,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.CheckBox,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(end = 4.dp)
-                    )
-                    Text(
-                        text = userContext.activeBook!!.status,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                if(!userContext.activeBook!!.packetBoxId.isNullOrBlank()){
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Filled.Polyline,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier
-                                .size(18.dp)
-                                .padding(end = 4.dp)
-                        )
-                        Text(
-                            text = userContext.activeBook!!.distance.toString() + "m",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontStyle = FontStyle.Italic,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                HorizontalDivider()
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // book summary
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.Description,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(end = 4.dp)
-                    )
-
-                    Text(
-                        text = "Summary:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
-                    )
-                }
-                val scrollState = rememberScrollState()
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 200.dp) // max height
-                        .verticalScroll(scrollState)
-                ) {
-                    Text(
-                        text = userContext.activeBook!!.summary,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
-                    )
-                }
-
-                HorizontalDivider()
-                Spacer(modifier = Modifier.height(16.dp))
+            Column(modifier = Modifier.padding(16.dp)) {
 
                 AsyncImage(
-                    model = userContext.activeBook!!.imageUrl,
+                    model = book.imageUrl,
                     contentDescription = "Book cover",
-                    placeholder = rememberVectorPainter(Icons.Filled.Book), //TODO rememberVectorPainter is probobaly quite expensive idk, can replace with actul images
+                    placeholder = rememberVectorPainter(Icons.Filled.Book),
                     error = rememberVectorPainter(Icons.Filled.Error),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp)
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(8.dp))
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White
+                )
+                Text(
+                    text = book.author,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontStyle = FontStyle.Italic,
+                    color = Color.White.copy(alpha = 0.65f),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.CheckBox,
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.5f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    val isAvailable = book.status == "available"
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isAvailable)
+                            Color(0xFF4CAF50).copy(alpha = 0.25f)
+                        else
+                            Color(0xFFE53935).copy(alpha = 0.25f)
+                    ) {
+                        Text(
+                            text = book.status,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isAvailable) Color(0xFFA5D6A7) else Color(0xFFEF9A9A),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                if (!book.packetBoxId.isNullOrBlank()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Polyline,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.5f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Box #${book.packetBoxId} · ${book.distance} m away",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.75f)
+                        )
+                    }
+                }
+
+                HorizontalDivider(
+                    color = Color.White.copy(alpha = 0.15f),
+                    modifier = Modifier.padding(vertical = 12.dp)
+                )
+
+                Text(
+                    text = "SUMMARY",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.5f),
+                    letterSpacing = 0.08.sp,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+
+                val scrollState = rememberScrollState()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 200.dp)
+                        .verticalScroll(scrollState)
+                ) {
+                    Text(
+                        text = book.summary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.75f),
+                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-        if(userContext.activeBook!!.status=="owned" && userContext.activeBook!!.owner==userContext.userId){
-            Button(onClick = {userContext.removeBook()}
+        if (book.status == "owned" && book.owner == userContext.userId) {
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = { userContext.removeBook() },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color(0xFFEF9A9A)
+                ),
+                border = BorderStroke(0.5.dp, Color(0xFFE53935).copy(alpha = 0.35f))
             ) {
-                //TODO: make a popup that will warn the user and ask again if they're sure
-                Text("Remove book from Database")
+                Text("Remove book from database")
             }
         }
-
     }
 }
