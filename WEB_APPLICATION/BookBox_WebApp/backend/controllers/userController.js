@@ -214,10 +214,11 @@ module.exports = {
         console.log("recieving response")
 
         const { match } = await flaskRes.json();
-
         fs.unlinkSync(req.file.path);
 
+        console.log(match)
         if (!match) {
+            console.log("face not match ")
             return res.status(401).json({ message: 'Face not recognized' });
         }
 

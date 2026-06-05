@@ -12,15 +12,17 @@ from torchvision.models import resnet18, ResNet18_Weights
 IMG_SIZE = 224
 NUM_CLASSES = 4
 
+_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class OrangeDetector:
     """Wrapper class for orange detection inference."""
 
-    def __init__(self, model_path="models/orange_classifier.pth", device=None):
-        if device is None:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
+    def __init__(self, model_path=None, device=None):
+        if model_path is None:
+            model_path = os.path.join(_DIR, "models", "orange_classifier.pth")
+        
+        # device setup must always run
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu") if device is None else device
 
         # Load ResNet18 architecture
         self.model = resnet18(weights=None)
@@ -86,10 +88,11 @@ class OrangeDetector:
         cv2.destroyAllWindows()
 
     def detect(self, image_path, confidence_threshold=0.7, return_details=False):
+        print("before image: " + image_path)
         img = cv2.imread(image_path)
         if img is None:
             raise FileNotFoundError(f"Image not found: {image_path}")
-
+        print("got past image")
         original_size = img.shape[:2]
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_resized = cv2.resize(img_rgb, (IMG_SIZE, IMG_SIZE))

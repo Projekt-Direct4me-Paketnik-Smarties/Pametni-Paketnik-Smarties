@@ -1,2 +1,5 @@
-opencv-python-headless
 flask
+torch
+torchvision
+opencv-python-headless
+pillow
