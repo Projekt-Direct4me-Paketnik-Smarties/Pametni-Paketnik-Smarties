@@ -40,34 +40,20 @@ module.exports = {
     },
 
     create: function (req, res) {
-    const { title, author, glossary, genre, weight } = req.body;
-    if(!title || !author || !genre){
-        return res.status(500).json({ message: "Missing input" });
-    }
-    try {
+        console.log("asd")
+        const { title, author, glossary, genre, weight } = req.body;
+        if (!title || !author || !genre) {
+            return res.status(400).json({ message: "Missing input" });
+        }
         var book = new BookModel({
-			title : title,
-            path: "/images/" + (req.file? req.file.filename: "1ef969c2acb1d69ffad3f5a19b5833f4"),
-			author : author,
-			glossary : glossary,
-			genre : genre,
-            weight: weight
+            title, author, glossary, genre, weight,
+            path: "/images/" + (req.file ? req.file.filename : "1ef969c2acb1d69ffad3f5a19b5833f4"),
+            owner: req.user.id  // ← from JWT instead of hardcoded
         });
-
         book.save(function (err, book) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when creating book',
-                    error: err
-                });
-            }
-
+            if (err) return res.status(500).json({ message: 'Error when creating book', error: err });
             return res.status(201).json({});
         });
-    }catch(err){
-        console.error(err);
-        res.status(500).json({ message: err.message });
-    }
     },
 
     /**
@@ -149,5 +135,18 @@ module.exports = {
 
             return res.status(204).json();
         });
+    },
+
+    myBooks: async function (req, res) {
+        const id = req.user.id;
+        try {
+            const books = await BookModel.find({ owner: id });
+            if (!books || books.length === 0) {
+                return res.status(404).json({ message: 'No books found.' });
+            }
+            return res.json(books);
+        } catch (err) {
+            return res.status(500).json({ message: 'Error when getting books.', error: err });
+        }
     }
 };

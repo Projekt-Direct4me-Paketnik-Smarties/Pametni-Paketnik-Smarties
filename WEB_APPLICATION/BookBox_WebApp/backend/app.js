@@ -5,6 +5,7 @@ var logger = require('morgan');
 require("dotenv").config();
 
 
+var app = express();
 const PORT = process.env.PORT || 5000;
 console.log(process.env.MONGO_URI)
 mongoose
@@ -24,7 +25,6 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 // Routers
 var indexRouter = require('./routes/index');
-var authRouter = require('./routes/authRoutes');
 var usersRouter = require('./routes/userRoutes');
 var bookRouter = require('./routes/bookRoutes');
 var packetBoxRouter = require('./routes/packetBoxRoutes');
@@ -32,7 +32,6 @@ var borrowRouter = require('./routes/borrowRoutes');
 const { checkOverdue } = require('./controllers/borrowController');
 setInterval(checkOverdue, 24 * 60 * 60 * 1000); //checks for overdue on return of books
 
-var app = express();
 
 
 var session = require('express-session');
@@ -58,7 +57,6 @@ app.use('/images', express.static('public/images'));
 
 // Routes
 app.use('/', indexRouter);
-app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/books', bookRouter);
 app.use('/box', packetBoxRouter);

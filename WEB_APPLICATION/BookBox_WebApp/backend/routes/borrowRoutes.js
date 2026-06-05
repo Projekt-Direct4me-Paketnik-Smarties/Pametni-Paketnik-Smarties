@@ -28,11 +28,20 @@ router.get('/', requiresLogin, borrowController.listMine); //to get your own
 router.get('/all', requiresAuth, borrowController.listAll); //to get all
 router.get('/:id',requiresLogin, borrowController.show);
 
-router.post('/',requiresLogin, borrowController.create);
-router.post('/return', requiresLogin, borrowController.returnBooks)
+var tokenAuth = require('../middleware/tokenAuth');
+var adminAuth = require('../middleware/adminAuth')
 
-router.put('/:id',requiresAuth, borrowController.update);
+router.get('/', tokenAuth, borrowController.listPerUser);
+router.get('/all', tokenAuth,adminAuth, borrowController.list); //admin
+router.get('/:id', tokenAuth, borrowController.show);
 
-router.delete('/:id',requiresAuth, borrowController.remove);
+router.post('/borrow', tokenAuth, borrowController.borrowBooks);
+router.post('/return', tokenAuth, borrowController.returnBooks);
+router.post('/reposes', tokenAuth, borrowController.reposesBooks);
+router.post('/donate', tokenAuth, borrowController.donateBooks);
+
+router.put('/:id', tokenAuth, borrowController.update);
+
+router.delete('/:id', tokenAuth,adminAuth, borrowController.remove); //admin
 
 module.exports = router;

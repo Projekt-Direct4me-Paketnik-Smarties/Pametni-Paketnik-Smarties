@@ -17,8 +17,17 @@ function App() {
     const [user, setUser] = useState(localStorage.user ? JSON.parse(localStorage.user) : null);
 
     const updateUserData = (userInfo) => {
-        localStorage.setItem('user', JSON.stringify(userInfo));
-        setUser(userInfo);
+        if (userInfo) {
+            localStorage.setItem('user', JSON.stringify(userInfo.user));
+            localStorage.setItem('accessToken', userInfo.accessToken);
+            localStorage.setItem('refreshToken', userInfo.refreshToken);
+            setUser(userInfo.user);
+        } else {
+            localStorage.removeItem('user');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            setUser(null);
+        }
     };
 
     return (

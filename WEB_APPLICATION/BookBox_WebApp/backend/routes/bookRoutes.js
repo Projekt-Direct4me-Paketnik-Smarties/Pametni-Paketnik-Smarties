@@ -17,14 +17,16 @@ function requiresAuth(req, res, next){
 }
 
 
+var tokenAuth = require('../middleware/tokenAuth');
 
 router.get('/', bookController.list);
+router.get('/myBook', tokenAuth, bookController.myBooks);
 router.get('/:id', bookController.show);
 
-router.post('/',requiresAuth,upload.single('image'), bookController.create);
+router.post('/', tokenAuth, upload.single('image'), bookController.create);
 
-router.put('/:id',requiresAuth,upload.single('image'), bookController.update);
+router.put('/:id', tokenAuth, upload.single('image'), bookController.update);
 
-router.delete('/:id',requiresAuth, bookController.remove);
+router.delete('/:id', tokenAuth, bookController.remove);
 
 module.exports = router;

@@ -12,15 +12,16 @@ function requiresAuth(req, res, next){
         return next(err);
     }
 }
+var tokenAuth = require('../middleware/tokenAuth');
+var adminAuth = require('../middleware/adminAuth.js')
 
 router.get('/', packetBoxController.list);
 router.get('/:id', packetBoxController.show);
 
-router.post('/',requiresAuth, packetBoxController.create);
+router.post('/', tokenAuth,adminAuth, packetBoxController.create);
 
-router.put('/books/:id',requiresAuth, packetBoxController.addNewBooks);
-router.put('/:id',requiresAuth, packetBoxController.update);
+router.put('/:id', tokenAuth,adminAuth, packetBoxController.update);
 
-router.delete('/:id',requiresAuth, packetBoxController.remove);
+router.delete('/:id', tokenAuth,adminAuth, packetBoxController.remove);
 
 module.exports = router;

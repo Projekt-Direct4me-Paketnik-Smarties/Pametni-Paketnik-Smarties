@@ -1,31 +1,20 @@
 var express = require('express');
 var router = express.Router();
 var userController = require('../controllers/userController.js');
-
-function requiresLogin(req, res, next){
-    if(req.session && req.session.userId){
-        console.log("user authorized")
-        return next();
-    } else{
-        var err = new Error("You must be logged in to view this page");
-        err.status = 401;
-        console.log("user NOT authorized")
-        return next(err);
-    }
-}
+var tokenAuth = require('../middleware/tokenAuth');
+var upload = require('../middleware/upload');
 
 router.get('/', userController.list);
-
-// naj bo PRED /:id
-router.get('/logout', userController.logout);
-
 router.get('/:id', userController.show);
 
-router.post('/', userController.create);
+router.post('/', userController.create)
 router.post('/login', userController.login);
+router.post('/logout', userController.logout);
+router.post('/refresh', userController.refresh);
+router.post('/image-login', upload.single('image'), userController.image_2FA);
 
-router.put('/:id', userController.update);
+router.put('/:id', tokenAuth, userController.update);
 
-router.delete('/:id', requiresLogin, userController.remove);
+router.delete('/:id', tokenAuth, userController.remove);
 
 module.exports = router;

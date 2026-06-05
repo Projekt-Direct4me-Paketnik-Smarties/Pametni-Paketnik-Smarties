@@ -1,0 +1,30 @@
+services:
+  flask:
+    build: ./ORV
+    container_name: python
+    ports:
+      - "5001:5001"
+    volumes:
+      - uploads:/ORV/uploads
+  backend:
+    build: ./WEB_APPLICATION/BookBox_WebApp/backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./WEB_APPLICATION/BookBox_WebApp/backend/.env
+    environment:
+      - FLASK_URL=http://flask:5001
+    volumes:
+      - uploads:/ORV/uploads
+    depends_on:
+      - flask
+  frontend:
+    build: ./WEB_APPLICATION/BookBox_WebApp/frontend
+    container_name: bookbox-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  uploads:

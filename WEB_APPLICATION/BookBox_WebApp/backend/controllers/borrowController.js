@@ -7,8 +7,10 @@ module.exports = {
     listAll: async function(req, res) {
         try {
             const borrows = await BorrowModel.find()
+                .sort({ date: -1 })
                 .populate('user')
                 .populate('books');
+
             return res.json(borrows);
         } catch (err) {
             console.error(err);
@@ -22,11 +24,9 @@ module.exports = {
                 .sort({ date: -1 });
             return res.json(borrows);
         } catch (err) {
-            console.error(err);
             res.status(500).json({ message: err.message });
         }
     },
-
     show: function (req, res) {
         var id = req.params.id;
 
@@ -47,11 +47,11 @@ module.exports = {
             return res.json(borrow);
         });
     },
-    create: async function (req, res) {
+    borrowBooks: async function (req, res) {
         try{
             let bookIds = req.body.books;
             const boxId = req.body.packetBox;
-            const userId=req.session.userId;
+            const userId = req.user.id;
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
 
             const books = await BookModel.find({ _id: { $in: bookIds } });
@@ -63,10 +63,6 @@ module.exports = {
                 });
             }
 
-            // here must put the check that the box was open, get the weight, and then decide if the books' weight
-            // is the same as the weight of the chosen books.
-
-
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
                 { $set: { status: 'borrowed', box: null, currentBorrower: userId } }
@@ -74,7 +70,7 @@ module.exports = {
 
             // remove books from box
             await PacketboxModel.updateOne(
-                { _id: boxId },
+                { packetBoxId: boxId },
                 { $pull: { books: { $in: bookIds } } }
             );
 
@@ -156,15 +152,20 @@ module.exports = {
         try{
             let bookIds = req.body.books;
             const boxId = req.body.packetBox;
-            const userId=req.session.userId;
+            const userId = req.user.id;
 
             if (!Array.isArray(bookIds)) bookIds = [bookIds];
             const books = await BookModel.find({ _id: { $in: bookIds } });
-            const available = books.filter(b => b.status !== 'borrowed');
-            if (available.length > 0) {
+            const invalidBooks = books.filter(
+                b =>
+                    b.status !== 'borrowed' ||
+                    !b.currentBorrower?.equals(userId)
+            );
+
+            if (invalidBooks.length > 0) {
                 return res.status(400).json({
-                    message: 'Some books are not borrowed',
-                    books: available.map(b => b.title)
+                    message: 'Some books are not borrowed by this user',
+                    books: invalidBooks.map(b => b.title)
                 });
             }
 
@@ -187,7 +188,7 @@ module.exports = {
 
             // remove books from box
             await PacketboxModel.updateOne(
-                { _id: boxId },
+                { packetBoxId: boxId },
                 { $addToSet: { books: { $each: bookIds } } }
             );
 
@@ -217,6 +218,121 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
+
+    donateBooks: async function (req,res) {
+        try{
+            let bookIds = req.body.books;
+            const boxId = req.body.packetBox;
+            const userId = req.user.id;
+            console.log("boxId: "+boxId)
+            if (!Array.isArray(bookIds)) bookIds = [bookIds];
+            const books = await BookModel.find({ _id: { $in: bookIds } });
+            const available = books.filter(b => b.status !== 'owned');
+            if (available.length > 0) {
+                return res.status(400).json({
+                    message: 'Some books are not in your possesion',
+                    books: available.map(b => b.title)
+                });
+            }
+            console.log("all books available")
+
+            await BookModel.updateMany(
+                { _id: { $in: bookIds } },
+                { $set: { status: 'available', packetBox: boxId } }
+            );
+
+            console.log("books updated")
+            await PacketboxModel.updateOne(
+                { packetBoxId: boxId },
+                { $addToSet: { books: { $each: bookIds } } }
+            );
+
+            console.log("packetBox Updated")
+            var borrow = new BorrowModel({
+                user : userId,
+                packetBox : boxId,
+                date : Date.now(),
+                books : bookIds,
+                action: "donate"
+            });
+
+            console.log("borrow created")
+            borrow.save(function (err, borrow) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Error when creating donate books',
+                        error: err
+                    });
+                }
+
+                return res.status(201).json(borrow);
+            });
+
+            console.log("borrow saved")
+            
+        }
+        catch (err){
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
+    },
+
+    reposesBooks: async function (req,res) {
+        try{
+            let bookIds = req.body.books;
+            const boxId = req.body.packetBox;
+            const userId = req.user.id;
+
+            if (!Array.isArray(bookIds)) bookIds = [bookIds];
+            const books = await BookModel.find({ _id: { $in: bookIds } });
+            const available = books.filter(
+                b => b.status !== 'available' || !b.owner.equals(userId)
+            );
+            if (available.length > 0) {
+                return res.status(400).json({
+                    message: 'Some books are not available to reposes',
+                    books: available.map(b => b.title)
+                });
+            }
+
+            await BookModel.updateMany(
+                { _id: { $in: bookIds } },
+                { $set: { status: 'owned', packetBox: "" } }
+            );
+
+            // remove books from box
+            await PacketboxModel.updateOne(
+                { packetBoxId: boxId },
+                { $pull: { books: { $in: bookIds } } }
+            );
+
+            var borrow = new BorrowModel({
+                user : userId,
+                packetBox : boxId,
+                date : Date.now(),
+                books : bookIds,
+                action: "reposes"
+            });
+
+            borrow.save(function (err, borrow) {
+                if (err) {
+                    return res.status(500).json({
+                        message: 'Error when reposesing books',
+                        error: err
+                    });
+                }
+
+                return res.status(201).json(borrow);
+            });
+
+            
+        }
+        catch (err){
+            console.error(err);
+            res.status(500).json({ message: err.message });
+        }
+    },
+    
     checkOverdue: async function() {
     const cutoff = new Date(Date.now() - TWO_WEEKS);
     const overdueBooks = await BookModel.find({
@@ -226,6 +342,5 @@ module.exports = {
     for (const book of overdueBooks) {
         console.log(`OVERDUE: book "${book.title}" (${book._id})`);
     }
-    }
-
+    },
 };

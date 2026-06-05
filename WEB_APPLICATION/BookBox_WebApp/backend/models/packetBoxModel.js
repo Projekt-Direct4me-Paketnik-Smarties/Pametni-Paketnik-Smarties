@@ -14,7 +14,8 @@ var packetBoxSchema = new Schema({
 		default: undefined
 		}
 	},
-	'books': [{ type: Schema.Types.ObjectId, ref: 'book' }]
+	'books': [{ type: Schema.Types.ObjectId, ref: 'book' }],
+	'packetBoxId':String
 });
 
 packetBoxSchema.index({ location: '2dsphere' });

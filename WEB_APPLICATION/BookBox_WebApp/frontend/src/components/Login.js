@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../userContext.js';
+import { apiFetch } from '../apiFetch.js';
 
 function Login() {
     const { setUserContext } = useContext(UserContext);
@@ -8,13 +9,13 @@ function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [status, setStatus] = useState('');
+    
 
     async function handleLogin(e) {
+        try{
         e.preventDefault();
-        const res = await fetch('http://localhost:5000/users/login', {
+        const res = await apiFetch('/users/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ username, password }),
         });
         const data = await res.json();
@@ -24,6 +25,9 @@ function Login() {
             navigate('/profile');
         } else {
             setStatus(data.message);
+        }}
+        catch(error){
+            console.log(error.message)
         }
     }
 

@@ -81,13 +81,14 @@ function FitBounds({ boxes }) {
 
     return null;
 }
+import { useState } from 'react';
+import { apiFetch } from '../apiFetch.js';
 
 function PacketBox() {
     const [name, setName] = useState('');
     const [longitude, setLongitude] = useState('');
     const [latitude, setLatitude] = useState('');
     const [boxId, setBoxId] = useState('');
-    const [bookIds, setBookIds] = useState('');
     const [status, setStatus] = useState('');
     const [boxes, setBoxes] = useState([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -162,10 +163,8 @@ function PacketBox() {
     async function handleCreate(e) {
         e.preventDefault();
 
-        const res = await fetch(`${BASE}/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+        const res = await apiFetch(`/box/`, {
+            method:'POST',
             body: JSON.stringify({ name, longitude, latitude }),
         });
 
@@ -189,10 +188,8 @@ function PacketBox() {
 
         if (!boxId) return setStatus('Box ID is required for update.');
 
-        const res = await fetch(`${BASE}/${boxId}`, {
+        const res = await apiFetch(`/box/${boxId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({ name, longitude, latitude }),
         });
 
@@ -209,9 +206,8 @@ function PacketBox() {
     async function handleDelete() {
         if (!boxId) return setStatus('Box ID is required for delete.');
 
-        const res = await fetch(`${BASE}/${boxId}`, {
+        const res = await apiFetch(`/box/${boxId}`, {
             method: 'DELETE',
-            credentials: 'include',
         });
 
         if (res.ok) {
@@ -230,7 +226,7 @@ function PacketBox() {
     async function handleShow() {
         if (!boxId) return setStatus('Box ID is required for show.');
 
-        const res = await fetch(`${BASE}/${boxId}`, { credentials: 'include' });
+        const res = await apiFetch(`/box/${boxId}`);
         const data = await res.json();
 
         if (res.ok) {
