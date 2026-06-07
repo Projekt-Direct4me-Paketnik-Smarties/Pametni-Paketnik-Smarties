@@ -1,6 +1,13 @@
 import { useState, useEffect, useContext } from 'react';
 import { UserContext } from '../userContext.js';
 
+const RETURN_HOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+function isOnReturnHold(book) {
+    if (!book.returnRequestedAt) return false;
+    return Date.now() - new Date(book.returnRequestedAt).getTime() < RETURN_HOLD_MS;
+}
+
 function BrowseBooks() {
     const { user } = useContext(UserContext);
     const [books, setBooks] = useState([]);
@@ -35,7 +42,7 @@ function BrowseBooks() {
                              b.author.toLowerCase().includes(search.toLowerCase());
 
         if (mode === 'borrow') {
-            return matchesSearch && b.status === 'available';
+            return matchesSearch && b.status === 'available' && !isOnReturnHold(b);
         } else {
             // Return mode: Only show books currently borrowed by the logged-in user
             return matchesSearch && b.status === 'borrowed' && b.currentBorrower === user?.id;

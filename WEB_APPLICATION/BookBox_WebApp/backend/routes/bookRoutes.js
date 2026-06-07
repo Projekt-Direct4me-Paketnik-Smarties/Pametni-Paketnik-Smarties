@@ -24,6 +24,7 @@ router.get('/myBook', tokenAuth, bookController.myBooks);
 router.get('/:id', bookController.show);
 
 router.post('/', tokenAuth, upload.single('image'), bookController.create);
+router.post('/:id/request-return', tokenAuth, bookController.requestReturn);
 
 router.put('/:id', tokenAuth, upload.single('image'), bookController.update);
 

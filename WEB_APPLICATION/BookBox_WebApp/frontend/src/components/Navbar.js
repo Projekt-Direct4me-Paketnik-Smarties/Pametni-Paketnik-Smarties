@@ -24,7 +24,7 @@ function Navbar() {
                 {user ? (
                     <>
                         {!user.isAdmin && (
-                            <Link to="/dashboard" style={styles.link} className="nav-link">My Books</Link>
+                            <Link to="/my-books" style={styles.link} className="nav-link">My Books</Link>
                         )}
                         <Link to="/profile" style={styles.link} className="nav-link">Profile</Link>
                         <span style={styles.userInfo}>Hello {user.username}!</span>

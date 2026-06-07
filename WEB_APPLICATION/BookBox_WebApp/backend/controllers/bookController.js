@@ -137,6 +137,28 @@ module.exports = {
         });
     },
 
+    requestReturn: async function (req, res) {
+        const id = req.params.id;
+        try {
+            const book = await BookModel.findOne({ _id: id });
+            if (!book) {
+                return res.status(404).json({ message: 'No such book' });
+            }
+            if (!book.owner || book.owner.toString() !== req.user.id) {
+                return res.status(403).json({ message: 'Only the owner can request the return of this book.' });
+            }
+            if (book.status !== 'available') {
+                return res.status(400).json({ message: 'This book is not currently sitting in a packet box.' });
+            }
+
+            book.returnRequestedAt = new Date();
+            await book.save();
+            return res.json(book);
+        } catch (err) {
+            return res.status(500).json({ message: 'Error when requesting book return.', error: err });
+        }
+    },
+
     myBooks: async function (req, res) {
         const id = req.user.id;
         try {

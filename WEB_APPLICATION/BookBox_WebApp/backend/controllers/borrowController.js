@@ -75,6 +75,15 @@ module.exports = {
                 });
             }
 
+            const RETURN_HOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+            const onHold = books.filter(b => b.returnRequestedAt && (Date.now() - b.returnRequestedAt.getTime()) < RETURN_HOLD_MS);
+            if (onHold.length > 0) {
+                return res.status(400).json({
+                    message: 'Some books are being held for their owner and cannot be borrowed right now',
+                    books: onHold.map(b => b.title)
+                });
+            }
+
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
                 { $set: { status: 'borrowed', box: null, currentBorrower: userId } }

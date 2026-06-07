@@ -32,6 +32,10 @@ var bookSchema = new Schema({
 		ref: 'user',
 		default: null
 	},
+	'returnRequestedAt': {
+		type: Date,
+		default: null
+	},
 }, { timestamps: true });
 
 module.exports = mongoose.model('book', bookSchema);

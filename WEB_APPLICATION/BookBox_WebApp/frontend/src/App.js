@@ -12,6 +12,7 @@ import Borrow from './components/Borrow.js';
 import BrowseBooks from './components/BrowseBooks.js';
 import './App.css';
 import UserDashboard from './components/UserDashboard.js';
+import MyBooks from './components/MyBooks.js';
 import AdminBoxHistory from './components/AdminBoxHistory.js';
 
 function AdminRoute({ children }) {
@@ -53,6 +54,7 @@ function App() {
                             <Route path="/browse" element={<BrowseBooks />} />
                             <Route path="/borrow" element={<Borrow />} />
                             <Route path="/dashboard" element={<UserDashboard />} />
+                            <Route path="/my-books" element={<MyBooks />} />
 
                             {/* Admin-only routes */}
                             <Route path="/box" element={<AdminRoute><Box /></AdminRoute>} />
