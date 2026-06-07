@@ -19,7 +19,7 @@ module.exports = {
     },
     listMine: async function(req, res) {
         try {
-            const borrows = await BorrowModel.find({ user: req.session.userId })
+            const borrows = await BorrowModel.find({ user: req.user.id })
                 .populate('books')
                 .sort({ date: -1 });
             return res.json(borrows);

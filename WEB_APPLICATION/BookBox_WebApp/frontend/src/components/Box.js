@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { apiFetch } from '../apiFetch.js';
 
 const BASE = 'http://localhost:5000/box';
 const DEFAULT_CENTER = [46.5547, 15.6467];
@@ -81,14 +82,13 @@ function FitBounds({ boxes }) {
 
     return null;
 }
-import { useState } from 'react';
-import { apiFetch } from '../apiFetch.js';
 
 function PacketBox() {
     const [name, setName] = useState('');
     const [longitude, setLongitude] = useState('');
     const [latitude, setLatitude] = useState('');
     const [boxId, setBoxId] = useState('');
+    const [bookIds, setBookIds] = useState('');
     const [status, setStatus] = useState('');
     const [boxes, setBoxes] = useState([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
