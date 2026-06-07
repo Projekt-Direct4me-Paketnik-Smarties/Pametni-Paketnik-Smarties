@@ -3,6 +3,7 @@ var Schema   = mongoose.Schema;
 
 var packetBoxSchema = new Schema({
 	'name' : String,
+	'address' : String,
 	'location': {
 		type: {
 		type: String,

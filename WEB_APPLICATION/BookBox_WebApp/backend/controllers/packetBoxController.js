@@ -36,11 +36,12 @@ module.exports = {
         });
     },
     create: function (req, res) {
-        const {name, longitude, latitude } = req.body;
-        
+        const {name, longitude, latitude, address } = req.body;
+
     try {
         var paketBox = new PacketboxModel({
 			name : name,
+            address: address,
             location: longitude && latitude ? {
                 type: 'Point',
                 coordinates: [parseFloat(longitude), parseFloat(latitude)]
@@ -65,7 +66,7 @@ module.exports = {
     },
     update: function (req, res) {
         const id = req.params.id;
-        const {name, longitude, latitude } = req.body;
+        const {name, longitude, latitude, address } = req.body;
 
         PacketboxModel.findOne({_id: id}, function (err, paketBox) {
             if (err) {
@@ -82,6 +83,7 @@ module.exports = {
             }
 
             paketBox.name = name ? name : paketBox.name;
+            paketBox.address = address ? address : paketBox.address;
             paketBox.location= longitude && latitude ? {
                 type: 'Point',
                 coordinates: [parseFloat(longitude), parseFloat(latitude)]

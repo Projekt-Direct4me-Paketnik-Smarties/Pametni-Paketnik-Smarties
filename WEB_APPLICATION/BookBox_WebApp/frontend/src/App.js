@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useState, useContext } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserContext } from './userContext.js';
 import Navbar from './components/Navbar.js';
 import Login from './components/Login.js';
@@ -12,6 +12,14 @@ import Borrow from './components/Borrow.js';
 import BrowseBooks from './components/BrowseBooks.js';
 import './App.css';
 import UserDashboard from './components/UserDashboard.js';
+import AdminBoxHistory from './components/AdminBoxHistory.js';
+
+function AdminRoute({ children }) {
+    const { user } = useContext(UserContext);
+    if (!user) return <Navigate to="/login" replace />;
+    if (!user.isAdmin) return <Navigate to="/" replace />;
+    return children;
+}
 
 function App() {
     const [user, setUser] = useState(localStorage.user ? JSON.parse(localStorage.user) : null);
@@ -42,11 +50,14 @@ function App() {
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
                             <Route path="/profile" element={<UserPanel />} />
-                            <Route path="/box" element={<Box />} />
-                            <Route path="/books" element={<Book />} />
                             <Route path="/browse" element={<BrowseBooks />} />
-                            <Route path="/borrow" element={<Borrow />}/>¸
+                            <Route path="/borrow" element={<Borrow />} />
                             <Route path="/dashboard" element={<UserDashboard />} />
+
+                            {/* Admin-only routes */}
+                            <Route path="/box" element={<AdminRoute><Box /></AdminRoute>} />
+                            <Route path="/books" element={<AdminRoute><Book /></AdminRoute>} />
+                            <Route path="/box-history" element={<AdminRoute><AdminBoxHistory /></AdminRoute>} />
                         </Routes>
                     </main>
                 </div>

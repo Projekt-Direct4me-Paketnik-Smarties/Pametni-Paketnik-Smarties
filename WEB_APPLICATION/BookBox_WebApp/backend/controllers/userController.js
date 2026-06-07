@@ -11,7 +11,7 @@ const FLASK_URL = process.env.FLASK_URL || 'http://localhost:5001';
 
 
 function sanitizeUser(user) {
-    return { id: user._id, username: user.username, email: user.email };
+    return { id: user._id, username: user.username, email: user.email, isAdmin: user.isAdmin };
 }
 function signAccessToken(user) {
     return jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: process.env.JWT_EXP || '1h' });

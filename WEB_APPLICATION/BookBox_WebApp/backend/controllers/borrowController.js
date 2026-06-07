@@ -11,7 +11,19 @@ module.exports = {
                 .populate('user')
                 .populate('books');
 
-            return res.json(borrows);
+            const boxes = await PacketboxModel.find();
+            const boxByPacketBoxId = new Map(boxes.map(box => [box.packetBoxId, box]));
+
+            const enriched = borrows.map(borrow => {
+                const box = boxByPacketBoxId.get(borrow.packetBox);
+                return {
+                    ...borrow.toObject(),
+                    packetBoxName: box?.name || null,
+                    packetBoxAddress: box?.address || null,
+                };
+            });
+
+            return res.json(enriched);
         } catch (err) {
             console.error(err);
             res.status(500).json({ message: err.message });

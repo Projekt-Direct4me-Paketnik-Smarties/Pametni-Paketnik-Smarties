@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -87,6 +88,7 @@ function PacketBox() {
     const [name, setName] = useState('');
     const [longitude, setLongitude] = useState('');
     const [latitude, setLatitude] = useState('');
+    const [address, setAddress] = useState('');
     const [boxId, setBoxId] = useState('');
     const [bookIds, setBookIds] = useState('');
     const [status, setStatus] = useState('');
@@ -152,10 +154,23 @@ function PacketBox() {
         };
     }, []);
 
-    function openCreateOverlay(nextCoordinates) {
+    async function openCreateOverlay(nextCoordinates) {
         setName('');
         setLongitude(nextCoordinates.longitude);
         setLatitude(nextCoordinates.latitude);
+
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${nextCoordinates.latitude}&lon=${nextCoordinates.longitude}`
+            );
+            const data = await response.json();
+
+            setAddress(data.display_name || 'Unknown address');
+        } catch (err) {
+            console.error('Geocoding error:', err);
+            setAddress('');
+        }
+
         setIsCreateOpen(true);
         setStatus(`Picked ${nextCoordinates.latitude}, ${nextCoordinates.longitude}.`);
     }
@@ -165,7 +180,7 @@ function PacketBox() {
 
         const res = await apiFetch(`/box/`, {
             method:'POST',
-            body: JSON.stringify({ name, longitude, latitude }),
+            body: JSON.stringify({ name, address, longitude, latitude }),
         });
 
         const data = await res.json();
@@ -176,6 +191,7 @@ function PacketBox() {
             setName('');
             setLongitude('');
             setLatitude('');
+            setAddress('');
             setBoxId(data._id || '');
             await loadBoxes();
         } else {
@@ -190,7 +206,7 @@ function PacketBox() {
 
         const res = await apiFetch(`/box/${boxId}`, {
             method: 'PUT',
-            body: JSON.stringify({ name, longitude, latitude }),
+            body: JSON.stringify({ name, address, longitude, latitude }),
         });
 
         const data = await res.json();
@@ -216,6 +232,7 @@ function PacketBox() {
             setName('');
             setLongitude('');
             setLatitude('');
+            setAddress('');
             await loadBoxes();
         } else {
             const data = await res.json();
@@ -233,6 +250,7 @@ function PacketBox() {
             setName(data.name || '');
             setLongitude(data.location?.coordinates?.[0] ?? '');
             setLatitude(data.location?.coordinates?.[1] ?? '');
+            setAddress(data.address || '');
             setStatus('Packet box loaded.');
         } else {
             setStatus(data.message || 'Show failed.');
@@ -276,14 +294,9 @@ function PacketBox() {
                 </div>
 
                 <div style={styles.heroStats}>
-                    <div style={styles.statCard}>
-                        <span style={styles.statLabel}>Visible boxes</span>
-                        <strong style={styles.statValue}>{markerBoxes.length}</strong>
-                    </div>
-                    <div style={styles.statCard}>
-                        <span style={styles.statLabel}>Create mode</span>
-                        <strong style={styles.statValue}>{isCreateOpen ? 'Open' : 'Closed'}</strong>
-                    </div>
+                    <Link to="/box-history" style={styles.historyLink}>
+                        See full history
+                    </Link>
                 </div>
             </div>
 
@@ -356,6 +369,16 @@ function PacketBox() {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Box Maribor Center"
+                                />
+                            </div>
+
+                            <div style={styles.field}>
+                                <label style={styles.label}>Address</label>
+                                <input
+                                    type="text"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    placeholder="Mariborska cesta 12"
                                 />
                             </div>
 
@@ -450,6 +473,10 @@ function PacketBox() {
                                 <h3 style={styles.boxName}>{box.name || 'Unnamed box'}</h3>
                                 <p style={styles.boxId}>ID: {box._id}</p>
 
+                                {box.address && (
+                                    <p style={styles.coordinates}>{box.address}</p>
+                                )}
+
                                 {box.location?.coordinates?.length === 2 && (
                                     <p style={styles.coordinates}>
                                         {Number(box.location.coordinates[1]).toFixed(6)}, {Number(box.location.coordinates[0]).toFixed(6)}
@@ -463,6 +490,7 @@ function PacketBox() {
                                         setName(box.name || '');
                                         setLongitude(box.location?.coordinates?.[0] ?? '');
                                         setLatitude(box.location?.coordinates?.[1] ?? '');
+                                        setAddress(box.address || '');
                                     }}
                                 >
                                     Select
@@ -500,23 +528,31 @@ function PacketBox() {
                                 </div>
 
                                 <div style={styles.field}>
-                                    <label style={styles.label}>Longitude</label>
+                                    <label style={styles.label}>Address</label>
                                     <input
                                         type="text"
-                                        value={longitude}
-                                        onChange={(e) => setLongitude(e.target.value)}
-                                        placeholder="15.6467"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        placeholder="Mariborska cesta 12"
                                     />
+                                    {!address && (
+                                        <p style={{ fontSize: '11px', color: '#b42318', marginTop: '4px' }}>
+                                            No address found for this location.
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div style={styles.field}>
-                                    <label style={styles.label}>Latitude</label>
+                                    <label style={styles.label}>Location</label>
                                     <input
                                         type="text"
-                                        value={latitude}
-                                        onChange={(e) => setLatitude(e.target.value)}
-                                        placeholder="46.5547"
+                                        value={longitude && latitude ? `${latitude}, ${longitude}` : ''}
+                                        readOnly
+                                        placeholder="Click a spot on the map to set the location"
                                     />
+                                    <p style={{ fontSize: '11px', color: '#777168', marginTop: '4px' }}>
+                                        Coordinates are picked by clicking on the map — close this panel and click the desired spot to change them.
+                                    </p>
                                 </div>
                             </div>
 
@@ -578,6 +614,21 @@ const styles = {
         fontFamily: 'Georgia, "Times New Roman", serif',
         fontWeight: 400,
         letterSpacing: '-0.04em',
+    },
+
+    historyLink: {
+        gridColumn: '1 / span 2',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '12px 18px',
+        backgroundColor: '#171717',
+        color: '#ffffff',
+        textDecoration: 'none',
+        fontSize: '11px',
+        fontWeight: 900,
+        letterSpacing: '0.16em',
+        textTransform: 'uppercase',
     },
 
     kicker: {
