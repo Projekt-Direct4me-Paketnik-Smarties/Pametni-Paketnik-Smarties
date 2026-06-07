@@ -15,6 +15,10 @@ function Books() {
     const [books, setBooks] = useState([]);
     const [selectedBook, setSelectedBook] = useState(null);
 
+    useEffect(() => {
+        handleList();
+    }, []);
+
     function buildFormData() {
         const fd = new FormData();
         fd.append('title', title);
@@ -121,7 +125,7 @@ function Books() {
         if (res.ok) {
             setStatus('Book deleted successfully.');
             clearForm();
-            setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
+            await handleList();
         } else {
             let data = null;
 
@@ -145,7 +149,6 @@ function Books() {
         console.log("parsed data")
         if (res.ok) {
             setBooks(data);
-            setStatus('Books loaded.');
             console.log('list:', data);
         } else {
             setStatus(data.message || 'List failed.');

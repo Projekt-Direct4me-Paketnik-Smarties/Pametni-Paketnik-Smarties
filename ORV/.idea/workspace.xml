@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c1b34261-f0ee-4e7d-963b-ee105875bbfc" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/ORV.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/detect_orange.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/train_orange_classifier.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/Untitled.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/image1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/image2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/image3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/image4.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/image5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/image6.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test-images/image7.jpg" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.7977197544935524" />
+      <entry key="MS500" value="3.7467879001614315" />
+      <entry key="S2" value="4.631461620078593" />
+      <entry key="S5" value="4.850236468958965" />
+      <entry key="S10" value="5.161612082498083" />
+      <entry key="S30" value="10.272710855626025" />
+      <entry key="S60" value="16.84955345247306" />
+      <entry key="M2" value="22.85106053023963" />
+      <entry key="M5" value="27.869880510943258" />
+      <entry key="M10" value="29.84713591487432" />
+      <entry key="M15" value="30.544481311063734" />
+      <entry key="M30" value="31.261904479837153" />
+      <entry key="H1" value="31.628330334836544" />
+      <entry key="H2" value="31.813504896214862" />
+      <entry key="H4" value="31.90658677700201" />
+      <entry key="D1" value="31.984408068234014" />
+      <entry key="W1" value="31.99777201573922" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.7399027813100045" />
+      <entry key="MS500" value="3.7221453656760186" />
+      <entry key="S2" value="4.623780625854871" />
+      <entry key="S5" value="4.847011725552544" />
+      <entry key="S10" value="5.15969873331339" />
+      <entry key="S30" value="10.268196521943253" />
+      <entry key="S60" value="16.844066160816244" />
+      <entry key="M2" value="22.846684877459637" />
+      <entry key="M5" value="27.8675540901453" />
+      <entry key="M10" value="29.845856205554952" />
+      <entry key="M15" value="30.543600539255742" />
+      <entry key="M30" value="31.261449817439054" />
+      <entry key="H1" value="31.628099345796738" />
+      <entry key="H2" value="31.81338847593039" />
+      <entry key="H4" value="31.906528333991943" />
+      <entry key="D1" value="31.98439829526785" />
+      <entry key="W1" value="31.997770618804566" />
+    </decayedShown>
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "git-widget-placeholder": "orv__zajem__clan__ena",
+    "last_opened_file_path": "C:/Users/lanpo/Documents/SOLA/ProjektPaketnik/Pametni-Paketnik-Smarties/ORV/test-images",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\lanpo\Documents\SOLA\ProjektPaketnik\Pametni-Paketnik-Smarties\ORV\test-images" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/train_orange_classifier.py</url>
+          <line>24</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

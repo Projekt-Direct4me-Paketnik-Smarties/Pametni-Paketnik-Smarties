@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { UserContext } from '../userContext.js';
+import { Link } from 'react-router-dom';
 import { apiFetch } from '../apiFetch.js';
 
 function UserPanel() {
@@ -75,6 +76,9 @@ function UserPanel() {
                 </div>
 
                 <div style={styles.actions}>
+                    <Link to="/dashboard" style={styles.historyLink}>
+                        View Borrow History
+                    </Link>
                     <button style={styles.dangerButton} onClick={handleLogout}>
                         Logout
                     </button>
@@ -209,8 +213,25 @@ const styles = {
 
     actions: {
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'flex-end',
+        gap: '12px',
         marginTop: '26px',
+    },
+
+    historyLink: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '10px 18px',
+        border: '1px solid #171717',
+        backgroundColor: '#171717',
+        color: '#ffffff',
+        textDecoration: 'none',
+        fontSize: '11px',
+        fontWeight: 900,
+        letterSpacing: '0.16em',
+        textTransform: 'uppercase',
     },
 
     dangerButton: {

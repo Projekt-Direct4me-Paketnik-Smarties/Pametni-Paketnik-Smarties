@@ -1,9 +1,42 @@
-import { useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { UserContext } from '../userContext.js';
+import BoxMap from './BoxMap.js';
 
 function Welcome() {
     const { user } = useContext(UserContext);
+    const [boxes, setBoxes] = useState([]);
+    const [mapStatus, setMapStatus] = useState('Loading nearby boxes...');
+
+    useEffect(() => {
+        let ignore = false;
+
+        async function loadBoxes() {
+            try {
+                const res = await fetch('http://localhost:5000/box');
+                const data = await res.json();
+
+                if (ignore) return;
+
+                if (res.ok) {
+                    setBoxes(data);
+                    setMapStatus(data.length ? 'Click a marker to inspect a box.' : 'No boxes have been placed yet.');
+                } else {
+                    setMapStatus(data.message || 'Unable to load boxes.');
+                }
+            } catch {
+                if (!ignore) {
+                    setMapStatus('Unable to load boxes.');
+                }
+            }
+        }
+
+        loadBoxes();
+
+        return () => {
+            ignore = true;
+        };
+    }, []);
 
     return (
         <section style={styles.wrapper}>
@@ -19,20 +52,19 @@ function Welcome() {
                 </p>
 
                 <div style={styles.actions}>
-                    <Link to="/books" style={styles.primaryLink}>
+                    <Link to="/browse" style={styles.primaryLink}>
                         Browse books
                     </Link>
-
-                    {user ? (
-                        <Link to="/profile" style={styles.secondaryLink}>
-                            View profile
-                        </Link>
-                    ) : (
-                        <Link to="/login" style={styles.secondaryLink}>
-                            Login
-                        </Link>
-                    )}
                 </div>
+            </div>
+
+            <div style={styles.mapPlaceholder}>
+                <p style={styles.kickerSmall}>Interactive Map</p>
+                <h2 style={styles.featureTitle}>Find Nearby Boxes</h2>
+                <div style={styles.mapCanvas}>
+                    <BoxMap boxes={boxes} height={300} zoom={12} />
+                </div>
+                <p style={styles.mapText}>{mapStatus}</p>
             </div>
 
             <div style={styles.grid}>
@@ -148,6 +180,29 @@ const styles = {
         display: 'grid',
         gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
         gap: '26px',
+    },
+
+    mapPlaceholder: {
+        padding: '40px',
+        backgroundColor: '#faf9f6',
+        border: '1px solid #e6e1d8',
+        marginBottom: '38px',
+    },
+
+    mapCanvas: {
+        marginTop: '20px',
+        height: '300px',
+        backgroundColor: '#efede8',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '1px dashed #cfc7ba',
+    },
+
+    mapText: {
+        color: '#8a867d',
+        fontSize: '14px',
+        fontStyle: 'italic',
     },
 
     featureCard: {

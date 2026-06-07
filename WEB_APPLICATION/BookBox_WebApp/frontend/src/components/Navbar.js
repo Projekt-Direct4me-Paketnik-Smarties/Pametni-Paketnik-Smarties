@@ -12,12 +12,20 @@ function Navbar() {
 
             <div style={styles.links}>
                 <Link to="/" style={styles.link} className="nav-link">Home</Link>
-                <Link to="/books" style={styles.link} className="nav-link">Books</Link>
-                <Link to="/box" style={styles.link} className="nav-link">Box</Link>
-                <Link to="/borrow" style={styles.link} className="nav-link">Borrow</Link>
+                <Link to="/browse" style={styles.link} className="nav-link">Browse Books</Link>
+                
+                {user && user.isAdmin && (
+                    <>
+                        <Link to="/books" style={styles.link} className="nav-link">Manage Books</Link>
+                        <Link to="/box" style={styles.link} className="nav-link">Manage Boxes</Link>
+                    </>
+                )}
 
                 {user ? (
                     <>
+                        {!user.isAdmin && (
+                            <Link to="/dashboard" style={styles.link} className="nav-link">My Books</Link>
+                        )}
                         <Link to="/profile" style={styles.link} className="nav-link">Profile</Link>
                         <span style={styles.userInfo}>Hello {user.username}!</span>
                     </>

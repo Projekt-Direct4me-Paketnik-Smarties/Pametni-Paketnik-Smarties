@@ -4,7 +4,7 @@ const BookModel = require('../models/bookModel.js');
 const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
 
 module.exports = {
-    list: async function(req, res) {
+    listAll: async function(req, res) {
         try {
             const borrows = await BorrowModel.find()
                 .sort({ date: -1 })
@@ -17,13 +17,11 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
-
-    listPerUser: async function(req, res) {
+    listMine: async function(req, res) {
         try {
-            const borrows = await BorrowModel.find({ user: req.user.id })
-                .sort({ date: -1 })
-                .populate('books');
-
+            const borrows = await BorrowModel.find({ user: req.session.userId })
+                .populate('books')
+                .sort({ date: -1 });
             return res.json(borrows);
         } catch (err) {
             res.status(500).json({ message: err.message });
@@ -67,13 +65,7 @@ module.exports = {
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                {
-                    $set: {
-                        status: 'borrowed',
-                        currentBorrower: userId,
-                        packetBox: ""
-                    }
-                }
+                { $set: { status: 'borrowed', box: null, currentBorrower: userId } }
             );
 
             // remove books from box
@@ -177,18 +169,21 @@ module.exports = {
                 });
             }
 
+            // Ownership check: Verify that the user returning the books is the one who borrowed them
+            const unauthorized = books.filter(b => b.currentBorrower && b.currentBorrower.toString() !== userId);
+            if (unauthorized.length > 0) {
+                return res.status(403).json({
+                    message: 'You are not authorized to return books borrowed by another user.',
+                    books: unauthorized.map(b => b.title)
+                });
+            }
+
+            // HERE GOES CHECK AND OPENNIGN OF THE SESEMEA, checking weight and all that
+
 
             await BookModel.updateMany(
                 { _id: { $in: bookIds } },
-                {
-                    $set: {
-                        status: 'available',
-                        packetBox: boxId
-                    },
-                    $unset: {
-                        currentBorrower: ""
-                    }
-                }
+                { $set: { status: 'available', box: boxId, currentBorrower: null } }
             );
 
             // remove books from box
