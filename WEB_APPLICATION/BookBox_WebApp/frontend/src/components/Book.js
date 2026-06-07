@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiFetch, uploadImage } from '../apiFetch.js';
 
 const IMAGE_BASE = 'http://localhost:5000';
